@@ -1,0 +1,8 @@
+- Payment
+- PaymentAllocation
+- Inventory
+- PurchaseOrder
+- Accounting Ledger
+- Payroll
+- Manufacturing Planning
+- CRM avanzado
