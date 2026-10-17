@@ -31,6 +31,9 @@ class InMemoryCustomerRepository(CustomerRepository):
 
         return None
 
+    def list_all(self) -> list[Customer]:
+        return list(self.customers)
+
 
 def test_get_customer():
     repository = InMemoryCustomerRepository()

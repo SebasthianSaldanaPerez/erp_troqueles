@@ -13,3 +13,7 @@ class CustomerRepository(ABC):
     @abstractmethod
     def get_by_id(self, customer_id: UUID) -> Customer | None:
         pass
+    @abstractmethod
+    def list_all(self) -> list[Customer]:
+        pass
+    
