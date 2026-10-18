@@ -1,7 +1,7 @@
 import pytest
 
-from src.customers.domain.value_objects.phone import Phone
-from src.customers.domain.errors import InvalidPhoneError
+from src.shared.domain.value_object.phone import Phone
+from src.shared.domain.errors import InvalidPhoneError
 
 
 def test_phone_is_created():

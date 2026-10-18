@@ -1,10 +1,10 @@
-from src.customers.domain.value_objects.address import Address
-from src.customers.domain.value_objects.phone import Phone
+from src.shared.domain.value_object.address import Address
+from src.shared.domain.value_object.phone import Phone
 
 import pytest
 from src.customers.domain.customer import Customer, CustomerStatus
-from src.customers.domain.value_objects.email import Email
-from src.customers.domain.value_objects.rfc import RFC
+from src.shared.domain.value_object.email import Email
+from src.shared.domain.value_object.rfc import RFC
 from src.customers.domain.errors import InvalidBusinessNameError
 
 def test_customer_is_created_active():

@@ -1,7 +1,7 @@
 import pytest
 
-from src.customers.domain.value_objects.email import Email
-from src.customers.domain.errors import InvalidEmailError
+from src.shared.domain.value_object.email import Email
+from src.shared.domain.errors import InvalidEmailError
 
 
 def test_email_is_created():

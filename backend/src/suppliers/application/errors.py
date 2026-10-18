@@ -1,0 +1,2 @@
+class SupplierNotFoundError(Exception):
+    pass

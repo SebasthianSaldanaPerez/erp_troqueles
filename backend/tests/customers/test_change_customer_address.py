@@ -13,7 +13,7 @@ from src.customers.domain.customer import Customer
 from tests.fakes.in_memory_customer_repository import (
     InMemoryCustomerRepository,
 )
-from src.customers.domain.errors import InvalidAddressError
+from src.shared.domain.errors import InvalidAddressError
 
 
 def test_change_customer_address():

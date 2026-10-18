@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass
-from src.customers.domain.errors import InvalidRFCError
+from src.shared.domain.errors import InvalidRFCError
 
 
 @dataclass(frozen=True)

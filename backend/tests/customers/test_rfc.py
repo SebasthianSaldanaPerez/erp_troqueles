@@ -1,7 +1,7 @@
 import pytest
 
-from src.customers.domain.value_objects.rfc import RFC
-from src.customers.domain.errors import InvalidRFCError
+from src.shared.domain.value_object.rfc import RFC
+from src.shared.domain.errors import InvalidRFCError
 
 def test_rfc_is_created():
     rfc = RFC("ABC010203XYZ")

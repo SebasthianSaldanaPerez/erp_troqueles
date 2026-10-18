@@ -13,7 +13,7 @@ from src.customers.domain.customer import Customer
 from tests.fakes.in_memory_customer_repository import (
     InMemoryCustomerRepository,
 )
-from src.customers.domain.errors import InvalidRFCError
+from src.shared.domain.errors import InvalidRFCError
 
 def test_change_customer_rfc():
     repository = InMemoryCustomerRepository()

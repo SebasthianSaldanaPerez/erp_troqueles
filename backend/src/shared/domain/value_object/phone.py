@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass
-from src.customers.domain.errors import InvalidPhoneError
+from src.shared.domain.errors import InvalidPhoneError
 
 
 @dataclass(frozen=True)

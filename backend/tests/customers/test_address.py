@@ -1,7 +1,7 @@
 import pytest
 
-from src.customers.domain.value_objects.address import Address
-from src.customers.domain.errors import InvalidAddressError
+from src.shared.domain.value_object.address import Address
+from src.shared.domain.errors import InvalidAddressError
 
 
 def test_address_is_created():

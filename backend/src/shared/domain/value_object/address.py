@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from src.customers.domain.errors import InvalidAddressError
+from src.shared.domain.errors import InvalidAddressError
 
 
 @dataclass(frozen=True)

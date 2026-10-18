@@ -1,9 +1,9 @@
 from enum import Enum
 from uuid import UUID, uuid4
-from src.customers.domain.value_objects.address import Address
-from src.customers.domain.value_objects.email import Email
-from src.customers.domain.value_objects.phone import Phone
-from src.customers.domain.value_objects.rfc import RFC
+from src.shared.domain.value_object.address import Address
+from src.shared.domain.value_object.email import Email
+from src.shared.domain.value_object.phone import Phone
+from src.shared.domain.value_object.rfc import RFC
 from src.customers.domain.errors import InvalidBusinessNameError
 
 class CustomerStatus(Enum):

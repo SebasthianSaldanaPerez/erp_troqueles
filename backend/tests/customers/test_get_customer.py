@@ -2,8 +2,8 @@ from uuid import uuid4
 
 import pytest
 
+from src.customers.application.errors import CustomerNotFoundError
 from src.customers.application.get_customer.handler import (
-    CustomerNotFoundError,
     GetCustomerHandler,
 )
 from src.customers.application.get_customer.query import GetCustomerQuery
