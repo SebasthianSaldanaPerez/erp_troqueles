@@ -1,11 +1,8 @@
+from src.customers.application.errors import CustomerNotFoundError
 from src.customers.domain.customer import Customer
 from src.customers.domain.customer_repository import CustomerRepository
 
 from .query import GetCustomerQuery
-
-
-class CustomerNotFoundError(Exception):
-    pass
 
 
 class GetCustomerHandler:

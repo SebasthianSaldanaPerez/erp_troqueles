@@ -8,9 +8,8 @@ from src.customers.application.deactivate_customer.command import (
 from src.customers.application.deactivate_customer.handler import (
     DeactivateCustomerHandler,
 )
-from src.customers.application.get_customer.handler import CustomerNotFoundError
+from src.customers.application.errors import CustomerNotFoundError
 from src.customers.domain.customer import Customer, CustomerStatus
-from src.customers.domain.customer_repository import CustomerRepository
 from tests.fakes.in_memory_customer_repository import (InMemoryCustomerRepository,)
 
 

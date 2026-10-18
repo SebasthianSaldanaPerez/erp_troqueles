@@ -8,7 +8,7 @@ from src.customers.application.reactivate_customer.command import (
 from src.customers.application.reactivate_customer.handler import (
     ReactivateCustomerHandler,
 )
-from src.customers.application.get_customer.handler import CustomerNotFoundError
+from src.customers.application.errors import CustomerNotFoundError
 from src.customers.domain.customer import Customer, CustomerStatus
 
 from tests.fakes.in_memory_customer_repository import (InMemoryCustomerRepository,)

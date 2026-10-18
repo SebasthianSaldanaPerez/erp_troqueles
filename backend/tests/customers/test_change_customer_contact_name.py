@@ -6,7 +6,7 @@ from src.customers.application.change_customer_contact_name.command import Chang
 from src.customers.application.change_customer_contact_name.handler import (
     ChangeCustomerContactNameHandler,
 )
-from src.customers.application.get_customer.handler import CustomerNotFoundError
+from src.customers.application.errors import CustomerNotFoundError
 from src.customers.domain.customer import Customer
 from tests.fakes.in_memory_customer_repository import (
     InMemoryCustomerRepository,

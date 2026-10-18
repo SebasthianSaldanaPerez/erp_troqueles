@@ -8,12 +8,12 @@ from src.customers.application.change_customer_email.command import (
 from src.customers.application.change_customer_email.handler import (
     ChangeCustomerEmailHandler,
 )
-from src.customers.application.get_customer.handler import CustomerNotFoundError
+from src.customers.application.errors import CustomerNotFoundError
 from src.customers.domain.customer import Customer
 from tests.fakes.in_memory_customer_repository import (
     InMemoryCustomerRepository,
 )
-
+from src.customers.domain.errors import InvalidEmailError
 
 def test_change_customer_email():
     repository = InMemoryCustomerRepository()
@@ -72,7 +72,7 @@ def test_change_customer_email_raises_error_when_email_is_invalid():
         new_email="invalid-email",
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidEmailError):
         handler.execute(command)
 
 

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from src.customers.domain.errors import InvalidAddressError
 
 
 @dataclass(frozen=True)
@@ -14,22 +15,22 @@ class Address:
 
     def __post_init__(self):
         if not self.street.strip():
-            raise ValueError("Street is required")
+            raise InvalidAddressError("Street is required")
 
         if not self.exterior_number.strip():
-            raise ValueError("Exterior number is required")
+            raise InvalidAddressError("Exterior number is required")
 
         if not self.city.strip():
-            raise ValueError("City is required")
+            raise InvalidAddressError("City is required")
 
         if not self.state.strip():
-            raise ValueError("State is required")
+            raise InvalidAddressError("State is required")
 
         if not self.country.strip():
-            raise ValueError("Country is required")
+            raise InvalidAddressError("Country is required")
 
         if not self.postal_code.strip():
-            raise ValueError("Postal code is required")
+            raise InvalidAddressError("Postal code is required")
 
         object.__setattr__(self, "street", self.street.strip())
         object.__setattr__(self, "exterior_number", self.exterior_number.strip())

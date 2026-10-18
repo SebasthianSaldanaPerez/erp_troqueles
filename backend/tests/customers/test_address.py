@@ -1,6 +1,7 @@
 import pytest
 
 from src.customers.domain.value_objects.address import Address
+from src.customers.domain.errors import InvalidAddressError
 
 
 def test_address_is_created():
@@ -34,7 +35,7 @@ def test_address_is_normalized():
 
 
 def test_address_requires_street():
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidAddressError):
         Address(
             street="",
             exterior_number="123",
@@ -46,7 +47,7 @@ def test_address_requires_street():
 
 
 def test_address_requires_city():
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidAddressError):
         Address(
             street="Av. Universidad",
             exterior_number="123",

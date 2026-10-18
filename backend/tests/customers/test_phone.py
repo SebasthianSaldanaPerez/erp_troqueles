@@ -1,6 +1,7 @@
 import pytest
 
 from src.customers.domain.value_objects.phone import Phone
+from src.customers.domain.errors import InvalidPhoneError
 
 
 def test_phone_is_created():
@@ -16,10 +17,10 @@ def test_phone_is_normalized():
 
 
 def test_phone_cannot_be_empty():
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidPhoneError):
         Phone("")
 
 
 def test_phone_must_have_valid_length():
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidPhoneError):
         Phone("123")

@@ -5,6 +5,7 @@ import pytest
 from src.customers.domain.customer import Customer, CustomerStatus
 from src.customers.domain.value_objects.email import Email
 from src.customers.domain.value_objects.rfc import RFC
+from src.customers.domain.errors import InvalidBusinessNameError
 
 def test_customer_is_created_active():
     customer = Customer("Troqueles Spindola")
@@ -15,7 +16,7 @@ def test_customer_is_created_active():
 
 
 def test_customer_requires_business_name():
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidBusinessNameError):
         Customer("")
 
 def test_customer_can_be_renamed():
@@ -29,7 +30,7 @@ def test_customer_can_be_renamed():
 def test_customer_cannot_be_renamed_with_empty_name():
     customer = Customer("Troqueles Spindola")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidBusinessNameError):
         customer.rename("")
 
 

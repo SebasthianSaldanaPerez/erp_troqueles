@@ -8,11 +8,12 @@ from src.customers.application.change_customer_address.command import (
 from src.customers.application.change_customer_address.handler import (
     ChangeCustomerAddressHandler,
 )
-from src.customers.application.get_customer.handler import CustomerNotFoundError
+from src.customers.application.errors import CustomerNotFoundError
 from src.customers.domain.customer import Customer
 from tests.fakes.in_memory_customer_repository import (
     InMemoryCustomerRepository,
 )
+from src.customers.domain.errors import InvalidAddressError
 
 
 def test_change_customer_address():
@@ -127,7 +128,7 @@ def test_change_customer_address_raises_error_when_address_is_invalid():
         country="Mexico",
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidAddressError):
         handler.execute(command)
 
 

@@ -1,4 +1,4 @@
-from src.customers.application.get_customer.handler import CustomerNotFoundError
+from src.customers.application.errors import CustomerNotFoundError
 from src.customers.domain.customer_repository import CustomerRepository
 from src.customers.domain.value_objects.phone import Phone
 

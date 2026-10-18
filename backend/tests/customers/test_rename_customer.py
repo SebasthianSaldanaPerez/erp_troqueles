@@ -3,10 +3,11 @@ from uuid import uuid4
 import pytest
 
 from tests.fakes.in_memory_customer_repository import (InMemoryCustomerRepository,)
-from src.customers.application.get_customer.handler import CustomerNotFoundError
+from src.customers.application.errors import CustomerNotFoundError
 from src.customers.application.rename_customer.command import RenameCustomerCommand
 from src.customers.application.rename_customer.handler import RenameCustomerHandler
 from src.customers.domain.customer import Customer
+from src.customers.domain.errors import InvalidBusinessNameError
 
 
 
@@ -58,5 +59,5 @@ def test_rename_customer_raises_error_when_new_name_is_empty():
         new_business_name="",
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidBusinessNameError):
         handler.execute(command)

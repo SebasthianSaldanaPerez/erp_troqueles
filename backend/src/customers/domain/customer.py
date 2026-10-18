@@ -4,6 +4,7 @@ from src.customers.domain.value_objects.address import Address
 from src.customers.domain.value_objects.email import Email
 from src.customers.domain.value_objects.phone import Phone
 from src.customers.domain.value_objects.rfc import RFC
+from src.customers.domain.errors import InvalidBusinessNameError
 
 class CustomerStatus(Enum):
     ACTIVE = "ACTIVE"
@@ -13,11 +14,9 @@ class CustomerStatus(Enum):
 class Customer:
     def __init__(self,business_name: str,customer_id: UUID | None = None, status: CustomerStatus = CustomerStatus.ACTIVE, email: Email | None = None, 
                  rfc: RFC | None = None, phone: Phone | None = None, address: Address | None = None, contact_name: str | None = None, notes: str | None = None,):
-        if not business_name or not business_name.strip():
-            raise ValueError("Business name is required")
 
         self._id = customer_id or uuid4()
-        self._business_name = business_name.strip()
+        self._business_name = self._validate_business_name(business_name)
         self._status = status
         self._email = email
         self._rfc = rfc
@@ -80,7 +79,7 @@ class Customer:
     @staticmethod
     def _validate_business_name(business_name: str) -> str:
         if not business_name or not business_name.strip():
-            raise ValueError("Business name is required")
+            raise InvalidBusinessNameError("Business name is required")
 
         return business_name.strip()
 

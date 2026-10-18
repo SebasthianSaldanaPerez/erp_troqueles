@@ -8,12 +8,12 @@ from src.customers.application.change_customer_rfc.command import (
 from src.customers.application.change_customer_rfc.handler import (
     ChangeCustomerRFCHandler,
 )
-from src.customers.application.get_customer.handler import CustomerNotFoundError
+from src.customers.application.errors import CustomerNotFoundError
 from src.customers.domain.customer import Customer
 from tests.fakes.in_memory_customer_repository import (
     InMemoryCustomerRepository,
 )
-
+from src.customers.domain.errors import InvalidRFCError
 
 def test_change_customer_rfc():
     repository = InMemoryCustomerRepository()
@@ -72,7 +72,7 @@ def test_change_customer_rfc_raises_error_when_rfc_is_invalid():
         new_rfc="INVALID",
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidRFCError):
         handler.execute(command)
 
 

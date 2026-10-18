@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+from src.customers.domain.errors import InvalidEmailError
 
 
 @dataclass(frozen=True)
@@ -10,11 +11,11 @@ class Email:
         normalized_email = self.value.strip().lower()
 
         if not normalized_email:
-            raise ValueError("Email cannot be empty")
+            raise InvalidEmailError("Email cannot be empty")
 
         pattern = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 
         if not re.match(pattern, normalized_email):
-            raise ValueError("Invalid email format")
+            raise InvalidEmailError("Invalid email format")
 
         object.__setattr__(self, "value", normalized_email)

@@ -6,7 +6,7 @@ from src.customers.application.change_customer_notes.command import ChangeCustom
 from src.customers.application.change_customer_notes.handler import (
     ChangeCustomerNotesHandler,
 )
-from src.customers.application.get_customer.handler import CustomerNotFoundError
+from src.customers.application.errors import CustomerNotFoundError
 from src.customers.domain.customer import Customer
 from tests.fakes.in_memory_customer_repository import (
     InMemoryCustomerRepository,

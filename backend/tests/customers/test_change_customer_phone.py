@@ -8,12 +8,12 @@ from src.customers.application.change_customer_phone.command import (
 from src.customers.application.change_customer_phone.handler import (
     ChangeCustomerPhoneHandler,
 )
-from src.customers.application.get_customer.handler import CustomerNotFoundError
+from src.customers.application.errors import CustomerNotFoundError
 from src.customers.domain.customer import Customer
 from tests.fakes.in_memory_customer_repository import (
     InMemoryCustomerRepository,
 )
-
+from src.customers.domain.errors import InvalidPhoneError
 
 def test_change_customer_phone():
     repository = InMemoryCustomerRepository()
@@ -72,7 +72,7 @@ def test_change_customer_phone_raises_error_when_phone_is_invalid():
         new_phone="INVALID",
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidPhoneError):
         handler.execute(command)
 
 
