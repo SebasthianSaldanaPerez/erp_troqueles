@@ -1,6 +1,6 @@
 from src.customers.application.errors import CustomerNotFoundError
 from src.customers.domain.customer_repository import CustomerRepository
-from src.shared.domain.value_object.email import Email
+from src.shared.domain.value_objects.email import Email
 
 from .command import ChangeCustomerEmailCommand
 

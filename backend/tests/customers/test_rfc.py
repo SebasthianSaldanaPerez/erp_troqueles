@@ -1,6 +1,6 @@
 import pytest
 
-from src.shared.domain.value_object.rfc import RFC
+from src.shared.domain.value_objects.rfc import RFC
 from src.shared.domain.errors import InvalidRFCError
 
 def test_rfc_is_created():

@@ -1,6 +1,6 @@
 from src.customers.application.errors import CustomerNotFoundError
 from src.customers.domain.customer_repository import CustomerRepository
-from src.shared.domain.value_object.rfc import RFC
+from src.shared.domain.value_objects.rfc import RFC
 
 from .command import ChangeCustomerRFCCommand
 

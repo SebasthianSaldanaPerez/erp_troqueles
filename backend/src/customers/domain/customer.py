@@ -1,9 +1,9 @@
 from enum import Enum
 from uuid import UUID, uuid4
-from src.shared.domain.value_object.address import Address
-from src.shared.domain.value_object.email import Email
-from src.shared.domain.value_object.phone import Phone
-from src.shared.domain.value_object.rfc import RFC
+from src.shared.domain.value_objects.address import Address
+from src.shared.domain.value_objects.email import Email
+from src.shared.domain.value_objects.phone import Phone
+from src.shared.domain.value_objects.rfc import RFC
 from src.customers.domain.errors import InvalidBusinessNameError
 
 class CustomerStatus(Enum):
@@ -76,12 +76,6 @@ class Customer:
     def reactivate(self) -> None:
         self._status = CustomerStatus.ACTIVE
 
-    @staticmethod
-    def _validate_business_name(business_name: str) -> str:
-        if not business_name or not business_name.strip():
-            raise InvalidBusinessNameError("Business name is required")
-
-        return business_name.strip()
 
     def change_phone(self, new_phone: Phone) -> None:
         self._phone = new_phone
@@ -100,3 +94,10 @@ class Customer:
 
     def change_notes(self, new_notes: str | None) -> None:
         self._notes = new_notes.strip() if new_notes else None
+
+    @staticmethod
+    def _validate_business_name(business_name: str) -> str:
+        if not business_name or not business_name.strip():
+            raise InvalidBusinessNameError("Business name is required")
+
+        return business_name.strip()

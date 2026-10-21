@@ -1,6 +1,6 @@
 import pytest
 
-from src.shared.domain.value_object.phone import Phone
+from src.shared.domain.value_objects.phone import Phone
 from src.shared.domain.errors import InvalidPhoneError
 
 

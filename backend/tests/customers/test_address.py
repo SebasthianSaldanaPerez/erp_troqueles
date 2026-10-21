@@ -1,6 +1,6 @@
 import pytest
 
-from src.shared.domain.value_object.address import Address
+from src.shared.domain.value_objects.address import Address
 from src.shared.domain.errors import InvalidAddressError
 
 

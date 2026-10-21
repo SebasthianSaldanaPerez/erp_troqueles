@@ -1,6 +1,6 @@
 import pytest
 
-from src.shared.domain.value_object.email import Email
+from src.shared.domain.value_objects.email import Email
 from src.shared.domain.errors import InvalidEmailError
 
 
