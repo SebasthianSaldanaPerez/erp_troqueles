@@ -1,0 +1,2 @@
+class QuotationNotFoundError(Exception):
+    pass
