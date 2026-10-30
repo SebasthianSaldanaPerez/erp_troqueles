@@ -49,3 +49,12 @@ class OrderItem:
             raise ValueError("Order item quantity must be greater than zero")
 
         return quantity
+
+    def change_description(self, new_description: str) -> None:
+        self._description = self._validate_description(new_description)
+
+    def change_quantity(self, new_quantity: int) -> None:
+        self._quantity = self._validate_quantity(new_quantity)
+
+    def change_unit_price(self, new_unit_price: Money) -> None:
+        self._unit_price = new_unit_price

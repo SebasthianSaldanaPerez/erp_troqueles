@@ -100,7 +100,6 @@ class Order:
 
         self._status = OrderStatus.DELIVERED
 
-
     def cancel(self) -> None:
         if self._status == OrderStatus.DELIVERED:
             raise ValueError("Delivered orders cannot be cancelled")
