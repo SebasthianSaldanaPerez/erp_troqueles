@@ -11,6 +11,7 @@ from src.invoices.application.register_invoice.handler import (
     RegisterInvoiceHandler,
 )
 from src.orders.application.errors import OrderNotFoundError
+from src.orders.domain.order import BillingStatus
 from src.orders.domain.order import Order
 from src.orders.domain.order_item import OrderItem
 from src.shared.domain.value_objects.money import Money
@@ -153,3 +154,67 @@ def test_register_invoice_raises_error_when_order_does_not_exist():
                 total=Decimal("1000.00"),
             )
         )
+
+def test_register_partial_invoice_updates_order_billing_status():
+    invoice_repository = InMemoryInvoiceRepository()
+    order_repository = InMemoryOrderRepository()
+
+    order = create_order()
+    order_repository.save(order)
+
+    handler = RegisterInvoiceHandler(
+        invoice_repository=invoice_repository,
+        order_repository=order_repository,
+    )
+
+    handler.execute(
+        RegisterInvoiceCommand(
+            order_id=order.id,
+            folio="FAC-001",
+            invoice_date=date.today(),
+            total=Decimal("4000.00"),
+            currency="MXN",
+        )
+    )
+
+    saved_order = order_repository.get_by_id(order.id)
+
+    assert saved_order is not None
+    assert saved_order.billing_status == BillingStatus.PARTIALLY_INVOICED
+
+def test_register_invoices_can_fully_invoice_order():
+    invoice_repository = InMemoryInvoiceRepository()
+    order_repository = InMemoryOrderRepository()
+
+    order = create_order()
+    order_repository.save(order)
+
+    handler = RegisterInvoiceHandler(
+        invoice_repository=invoice_repository,
+        order_repository=order_repository,
+    )
+
+    handler.execute(
+        RegisterInvoiceCommand(
+            order_id=order.id,
+            folio="FAC-001",
+            invoice_date=date.today(),
+            total=Decimal("4000.00"),
+            currency="MXN",
+        )
+    )
+
+    handler.execute(
+        RegisterInvoiceCommand(
+            order_id=order.id,
+            folio="FAC-002",
+            invoice_date=date.today(),
+            total=Decimal("6000.00"),
+            currency="MXN",
+        )
+    )
+
+    saved_order = order_repository.get_by_id(order.id)
+
+    assert saved_order is not None
+    assert saved_order.billing_status == BillingStatus.FULLY_INVOICED

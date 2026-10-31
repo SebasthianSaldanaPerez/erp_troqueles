@@ -11,6 +11,11 @@ class OrderStatus(Enum):
     DELIVERED = "DELIVERED"
     CANCELLED = "CANCELLED"
 
+class BillingStatus(Enum):
+    NOT_INVOICED = "NOT_INVOICED"
+    PARTIALLY_INVOICED = "PARTIALLY_INVOICED"
+    FULLY_INVOICED = "FULLY_INVOICED"
+    PAID = "PAID"
 
 class Order:
     def __init__(
@@ -21,12 +26,14 @@ class Order:
         order_id: UUID | None = None,
         revision_number: int = 0,
         status: OrderStatus = OrderStatus.CREATED,
+        billing_status: BillingStatus = BillingStatus.NOT_INVOICED,
     ):
         self._id = order_id or uuid4()
         self._customer_id = customer_id
         self._origin_quotation_id = origin_quotation_id
         self._currency = currency.strip().upper()
         self._status = status
+        self._billing_status = billing_status
         self._revision_number = revision_number
         self._items: list[OrderItem] = []
 
@@ -62,6 +69,10 @@ class Order:
     @property
     def revision_number(self) -> int:
         return self._revision_number
+
+    @property
+    def billing_status(self) -> BillingStatus:
+        return self._billing_status
 
     def add_item(self, item: OrderItem) -> None:
         self._ensure_editable()
@@ -171,3 +182,30 @@ class Order:
             ],
             "total": str(self.total.amount),
         }
+    
+    def update_billing_status(
+        self,
+        invoiced_amount: Money,
+    ) -> None:
+        if invoiced_amount.currency != self._currency:
+            raise ValueError("Invoiced amount currency must match order currency")
+
+        if invoiced_amount.amount <= 0:
+            self._billing_status = BillingStatus.NOT_INVOICED
+            return
+
+        if invoiced_amount.amount < self.total.amount:
+            self._billing_status = BillingStatus.PARTIALLY_INVOICED
+            return
+
+        if invoiced_amount.amount == self.total.amount:
+            self._billing_status = BillingStatus.FULLY_INVOICED
+            return
+
+        raise ValueError("Invoiced amount cannot exceed order total")
+
+    def mark_as_paid(self) -> None:
+        if self._billing_status != BillingStatus.FULLY_INVOICED:
+            raise ValueError("Only fully invoiced orders can be marked as paid")
+
+        self._billing_status = BillingStatus.PAID

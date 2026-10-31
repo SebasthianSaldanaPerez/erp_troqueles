@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from src.orders.domain.order import Order, OrderStatus
+from src.orders.domain.order import BillingStatus, Order, OrderStatus
 from src.orders.domain.order_item import OrderItem
 from src.shared.domain.value_objects.money import Money
 
@@ -129,3 +129,63 @@ def test_order_can_increment_revision():
 
     assert revision_number == 1
     assert order.revision_number == 1
+
+def test_order_billing_status_starts_as_not_invoiced():
+    order = Order(
+        customer_id=uuid4(),
+        currency="MXN",
+    )
+
+    assert order.billing_status == BillingStatus.NOT_INVOICED
+
+def test_order_can_be_partially_invoiced():
+    order = Order(
+        customer_id=uuid4(),
+        currency="MXN",
+    )
+
+    order.add_item(
+        OrderItem(
+            description="Troquel industrial",
+            quantity=1,
+            unit_price=Money(
+                Decimal("10000.00"),
+                "MXN",
+            ),
+        )
+    )
+
+    order.update_billing_status(
+        Money(
+            Decimal("4000.00"),
+            "MXN",
+        )
+    )
+
+    assert order.billing_status == BillingStatus.PARTIALLY_INVOICED
+
+def test_order_can_be_fully_invoiced():
+    order = Order(
+        customer_id=uuid4(),
+        currency="MXN",
+    )
+
+    order.add_item(
+        OrderItem(
+            description="Troquel industrial",
+            quantity=1,
+            unit_price=Money(
+                Decimal("10000.00"),
+                "MXN",
+            ),
+        )
+    )
+
+    order.update_billing_status(
+        Money(
+            Decimal("10000.00"),
+            "MXN",
+        )
+    )
+
+    assert order.billing_status == BillingStatus.FULLY_INVOICED

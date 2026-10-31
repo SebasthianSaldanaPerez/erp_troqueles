@@ -5,7 +5,7 @@ from src.invoices.domain.invoice_repository import InvoiceRepository
 from src.orders.application.errors import OrderNotFoundError
 from src.orders.domain.order_repository import OrderRepository
 from src.shared.domain.value_objects.money import Money
-
+from src.orders.domain.order import BillingStatus
 from .command import RegisterInvoiceCommand
 
 
@@ -57,4 +57,17 @@ class RegisterInvoiceHandler:
 
         self._invoice_repository.save(invoice)
 
+        total_invoiced = invoiced_amount + command.total
+
+        order.update_billing_status(
+            Money(
+                amount=total_invoiced,
+                currency=command.currency,
+            )
+        )
+
+        self._invoice_repository.save(invoice)
+        self._order_repository.save(order)
+
         return invoice.id
+
