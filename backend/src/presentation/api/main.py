@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from src.presentation.api.customers.router import router as customers_router
+from src.presentation.api.suppliers.router import router as suppliers_router
 
 
 app = FastAPI(
@@ -9,7 +10,7 @@ app = FastAPI(
 )
 
 app.include_router(customers_router)
-
+app.include_router(suppliers_router)
 
 @app.get("/health")
 def health_check():
