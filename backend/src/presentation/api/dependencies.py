@@ -25,6 +25,10 @@ from src.invoices.infrastructure.sqlalchemy_invoice_repository import (
 from src.orders.infrastructure.sqlalchemy_order_revision_repository import (
     SQLAlchemyOrderRevisionRepository,
 )
+from src.documents.infrastructure.local_file_storage import LocalFileStorage
+from src.documents.infrastructure.sqlalchemy_document_repository import (
+    SQLAlchemyDocumentRepository,
+)
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
@@ -69,3 +73,12 @@ def get_order_revision_repository(
     db: Session = Depends(get_db),
 ) -> SQLAlchemyOrderRevisionRepository:
     return SQLAlchemyOrderRevisionRepository(db)
+
+def get_document_repository(
+    db: Session = Depends(get_db),
+) -> SQLAlchemyDocumentRepository:
+    return SQLAlchemyDocumentRepository(db)
+
+
+def get_file_storage() -> LocalFileStorage:
+    return LocalFileStorage()

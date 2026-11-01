@@ -13,5 +13,15 @@ class FileStorage(ABC):
         pass
 
     @abstractmethod
-    def delete(self, object_key: str) -> None:
+    def read(
+        self,
+        object_key: str,
+    ) -> bytes:
+        pass
+
+    @abstractmethod
+    def delete(
+        self,
+        object_key: str,
+    ) -> None:
         pass
