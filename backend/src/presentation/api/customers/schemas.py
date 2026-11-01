@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 
 
+
 class AddressRequest(BaseModel):
     street: str
     exterior_number: str
@@ -46,3 +47,31 @@ class CustomerResponse(BaseModel):
     address: AddressResponse | None = None
     contact_name: str | None = None
     notes: str | None = None
+
+class RenameCustomerRequest(BaseModel):
+    new_business_name: str
+
+class ChangeCustomerEmailRequest(BaseModel):
+    new_email: str
+
+class ChangeCustomerRFCRequest(BaseModel):
+    new_rfc: str
+
+class ChangeCustomerPhoneRequest(BaseModel):
+    new_phone: str
+
+class ChangeCustomerAddressRequest(BaseModel):
+    street: str
+    exterior_number: str
+    interior_number: str | None = None
+    neighborhood: str | None = None
+    city: str
+    state: str
+    postal_code: str
+    country: str
+
+class ChangeCustomerContactNameRequest(BaseModel):
+    new_contact_name: str | None = None
+
+class ChangeCustomerNotesRequest(BaseModel):
+    new_notes: str | None = None
