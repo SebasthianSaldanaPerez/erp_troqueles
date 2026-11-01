@@ -31,6 +31,24 @@ from src.presentation.api.orders.schemas import (
 from src.orders.application.deliver_order.command import (
     DeliverOrderCommand,
 )
+from src.infrastructure.database.unit_of_work import (
+    SQLAlchemyUnitOfWork,
+)
+from src.orders.application.list_order_revisions.handler import (
+    ListOrderRevisionsHandler,
+)
+from src.orders.application.list_order_revisions.query import (
+    ListOrderRevisionsQuery,
+)
+from src.orders.application.revise_order.command import (
+    ReviseOrderCommand,
+)
+from src.orders.application.revise_order.handler import (
+    ReviseOrderHandler,
+)
+from src.orders.infrastructure.sqlalchemy_order_revision_repository import (
+    SQLAlchemyOrderRevisionRepository,
+)
 from src.orders.application.deliver_order.handler import (
     DeliverOrderHandler,
 )
@@ -52,9 +70,15 @@ from src.presentation.api.dependencies import (
     get_db,
     get_order_repository,
     get_expense_repository,
+    get_order_revision_repository,
 )
 from src.presentation.api.orders.mappers import order_to_response
-from src.presentation.api.orders.schemas import OrderResponse
+from src.presentation.api.orders.schemas import (
+    OrderResponse,
+    OrderProfitabilityResponse,
+    OrderRevisionResponse,
+    ReviseOrderRequest,
+)
 
 
 router = APIRouter(
@@ -315,3 +339,83 @@ def mark_order_as_paid(
     except Exception:
         db.rollback()
         raise
+
+@router.patch(
+    "/{order_id}/revision",
+    status_code=204,
+)
+def revise_order(
+    order_id: UUID,
+    request: ReviseOrderRequest,
+    db: Session = Depends(get_db),
+    order_repository: SQLAlchemyOrderRepository = Depends(
+        get_order_repository
+    ),
+    revision_repository: SQLAlchemyOrderRevisionRepository = Depends(
+        get_order_revision_repository
+    ),
+) -> None:
+    unit_of_work = SQLAlchemyUnitOfWork(db)
+
+    handler = ReviseOrderHandler(
+        order_repository=order_repository,
+        revision_repository=revision_repository,
+        unit_of_work=unit_of_work,
+    )
+
+    command = ReviseOrderCommand(
+        order_id=order_id,
+        item_id=request.item_id,
+        description=request.description,
+        quantity=request.quantity,
+        unit_price=request.unit_price,
+        currency=request.currency,
+        reason=request.reason,
+        user_id=request.user_id,
+    )
+
+    try:
+        handler.execute(command)
+
+    except OrderNotFoundError as error:
+        raise HTTPException(
+            status_code=404,
+            detail="Order not found",
+        ) from error
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=422,
+            detail=str(error),
+        ) from error
+
+@router.get(
+    "/{order_id}/revisions",
+    response_model=list[OrderRevisionResponse],
+)
+def list_order_revisions(
+    order_id: UUID,
+    repository: SQLAlchemyOrderRevisionRepository = Depends(
+        get_order_revision_repository
+    ),
+) -> list[OrderRevisionResponse]:
+    handler = ListOrderRevisionsHandler(repository)
+
+    revisions = handler.execute(
+        ListOrderRevisionsQuery(
+            order_id=order_id,
+        )
+    )
+
+    return [
+        OrderRevisionResponse(
+            id=str(revision.id),
+            order_id=str(revision.order_id),
+            revision_number=revision.revision_number,
+            snapshot=revision.snapshot,
+            reason=revision.reason,
+            created_by=str(revision.created_by),
+            created_at=revision.created_at,
+        )
+        for revision in revisions
+    ]

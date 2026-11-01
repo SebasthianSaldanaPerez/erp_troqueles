@@ -31,6 +31,16 @@ from src.invoices.application.list_invoices_by_order.handler import (
 from src.invoices.application.list_invoices_by_order.query import (
     ListInvoicesByOrderQuery,
 )
+from src.infrastructure.database.unit_of_work import (
+    SQLAlchemyUnitOfWork,
+)
+from src.invoices.application.cancel_invoice.command import (
+    CancelInvoiceCommand,
+)
+from src.invoices.application.cancel_invoice.handler import (
+    CancelInvoiceHandler,
+)
+from src.invoices.application.errors import InvoiceNotFoundError
 from src.presentation.api.invoices.mappers import invoice_to_response
 from src.presentation.api.invoices.schemas import InvoiceResponse
 
@@ -120,3 +130,44 @@ def list_invoices_by_order(
         invoice_to_response(invoice)
         for invoice in invoices
     ]
+
+@router.patch(
+    "/invoices/{invoice_id}/cancel",
+    status_code=204,
+)
+def cancel_invoice(
+    invoice_id: UUID,
+    db: Session = Depends(get_db),
+    invoice_repository: SQLAlchemyInvoiceRepository = Depends(
+        get_invoice_repository
+    ),
+    order_repository: SQLAlchemyOrderRepository = Depends(
+        get_order_repository
+    ),
+) -> None:
+    unit_of_work = SQLAlchemyUnitOfWork(db)
+
+    handler = CancelInvoiceHandler(
+        invoice_repository=invoice_repository,
+        order_repository=order_repository,
+        unit_of_work=unit_of_work,
+    )
+
+    try:
+        handler.execute(
+            CancelInvoiceCommand(
+                invoice_id=invoice_id,
+            )
+        )
+
+    except InvoiceNotFoundError as error:
+        raise HTTPException(
+            status_code=404,
+            detail="Invoice not found",
+        ) from error
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=422,
+            detail=str(error),
+        ) from error

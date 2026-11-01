@@ -1,6 +1,8 @@
 from decimal import Decimal
 
 from pydantic import BaseModel
+from datetime import datetime
+from uuid import UUID
 
 
 class OrderItemResponse(BaseModel):
@@ -32,3 +34,22 @@ class OrderProfitabilityResponse(BaseModel):
     profit: Decimal
     margin: Decimal
     currency: str
+
+class ReviseOrderRequest(BaseModel):
+    item_id: UUID
+    description: str
+    quantity: int
+    unit_price: Decimal
+    currency: str = "MXN"
+    reason: str
+    user_id: UUID
+
+
+class OrderRevisionResponse(BaseModel):
+    id: str
+    order_id: str
+    revision_number: int
+    snapshot: dict
+    reason: str
+    created_by: str
+    created_at: datetime
