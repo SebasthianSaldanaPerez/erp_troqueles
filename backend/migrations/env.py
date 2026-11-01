@@ -7,6 +7,10 @@ from alembic import context
 from src.infrastructure.database.base import Base
 from src.infrastructure.database.models.customer_model import CustomerModel
 from src.infrastructure.database.models.supplier_model import SupplierModel
+from src.infrastructure.database.models.quotation_model import (
+    QuotationItemModel,
+    QuotationModel,
+)
 import os
 
 from dotenv import load_dotenv

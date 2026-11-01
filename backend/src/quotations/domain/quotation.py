@@ -47,6 +47,14 @@ class Quotation:
         return tuple(self._items)
 
     @property
+    def tax_rate(self) -> TaxRate:
+        return self._tax_rate
+
+    @property
+    def currency(self) -> str:
+        return self._currency
+    
+    @property
     def subtotal(self) -> Money:
         total = Money.zero(self._currency)
 
@@ -141,3 +149,24 @@ class Quotation:
         if self._status != QuotationStatus.DRAFT:
             raise ValueError("Only draft quotations can be edited")
 
+    @classmethod
+    def rehydrate(
+        cls,
+        quotation_id: UUID,
+        customer_id: UUID,
+        tax_rate: TaxRate,
+        currency: str,
+        status: QuotationStatus,
+        items: list[QuotationItem],
+    ) -> "Quotation":
+        quotation = cls(
+            quotation_id=quotation_id,
+            customer_id=customer_id,
+            tax_rate=tax_rate,
+            currency=currency,
+            status=status,
+        )
+
+        quotation._items = list(items)
+
+        return quotation

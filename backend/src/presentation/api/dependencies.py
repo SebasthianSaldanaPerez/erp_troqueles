@@ -10,6 +10,9 @@ from src.infrastructure.database.session import SessionLocal
 from src.suppliers.infrastructure.sqlalchemy_supplier_repository import (
     SQLAlchemySupplierRepository,
 )
+from src.quotations.infrastructure.sqlalchemy_quotation_repository import (
+    SQLAlchemyQuotationRepository,
+)
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -30,3 +33,8 @@ def get_supplier_repository(
     db: Session = Depends(get_db),
 ) -> SQLAlchemySupplierRepository:
     return SQLAlchemySupplierRepository(db)
+
+def get_quotation_repository(
+    db: Session = Depends(get_db),
+) -> SQLAlchemyQuotationRepository:
+    return SQLAlchemyQuotationRepository(db)
