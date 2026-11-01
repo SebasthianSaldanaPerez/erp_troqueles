@@ -9,6 +9,12 @@ from src.orders.application.cancel_order.command import (
 from src.orders.application.cancel_order.handler import (
     CancelOrderHandler,
 )
+from src.orders.application.mark_order_as_paid.command import (
+    MarkOrderAsPaidCommand,
+)
+from src.orders.application.mark_order_as_paid.handler import (
+    MarkOrderAsPaidHandler,
+)
 from src.expenses.infrastructure.sqlalchemy_expense_repository import (
     SQLAlchemyExpenseRepository,
 )
@@ -267,3 +273,45 @@ def get_order_profitability(
         margin=result.margin,
         currency=result.currency,
     )
+
+@router.patch(
+    "/{order_id}/paid",
+    status_code=204,
+)
+def mark_order_as_paid(
+    order_id: UUID,
+    db: Session = Depends(get_db),
+    repository: SQLAlchemyOrderRepository = Depends(
+        get_order_repository
+    ),
+) -> None:
+    handler = MarkOrderAsPaidHandler(repository)
+
+    try:
+        handler.execute(
+            MarkOrderAsPaidCommand(
+                order_id=order_id,
+            )
+        )
+
+        db.commit()
+
+    except OrderNotFoundError as error:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=404,
+            detail="Order not found",
+        ) from error
+
+    except ValueError as error:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=422,
+            detail=str(error),
+        ) from error
+
+    except Exception:
+        db.rollback()
+        raise

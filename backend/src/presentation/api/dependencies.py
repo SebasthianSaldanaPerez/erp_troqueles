@@ -19,6 +19,9 @@ from src.orders.infrastructure.sqlalchemy_order_repository import (
 from src.expenses.infrastructure.sqlalchemy_expense_repository import (
     SQLAlchemyExpenseRepository,
 )
+from src.invoices.infrastructure.sqlalchemy_invoice_repository import (
+    SQLAlchemyInvoiceRepository,
+)
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
@@ -53,3 +56,8 @@ def get_expense_repository(
     db: Session = Depends(get_db),
 ) -> SQLAlchemyExpenseRepository:
     return SQLAlchemyExpenseRepository(db)
+
+def get_invoice_repository(
+    db: Session = Depends(get_db),
+) -> SQLAlchemyInvoiceRepository:
+    return SQLAlchemyInvoiceRepository(db)

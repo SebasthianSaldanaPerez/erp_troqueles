@@ -12,3 +12,4 @@ from src.infrastructure.database.models.order_revision_model import (
     OrderRevisionModel,
 )
 from src.infrastructure.database.models.expense_model import ExpenseModel
+from src.infrastructure.database.models.invoice_model import InvoiceModel
