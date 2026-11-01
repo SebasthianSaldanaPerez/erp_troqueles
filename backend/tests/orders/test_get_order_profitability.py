@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import pytest
 
+from src.shared.domain.value_objects.tax_rate import TaxRate
 from src.expenses.domain.expense import (
     Expense,
     ExpenseCategory,
@@ -30,6 +31,7 @@ def create_order() -> Order:
     order = Order(
         customer_id=uuid4(),
         currency="MXN",
+        tax_rate=TaxRate(Decimal("16")),
     )
 
     order.add_item(
@@ -90,10 +92,10 @@ def test_get_order_profitability():
         )
     )
 
-    assert result.revenue == Decimal("100000.00")
+    assert result.revenue == Decimal("116000.00")
     assert result.expenses == Decimal("42000.00")
-    assert result.profit == Decimal("58000.00")
-    assert result.margin == Decimal("58.00")
+    assert result.profit == Decimal("74000.00")
+    assert result.margin == Decimal("63.79")
     assert result.currency == "MXN"
 
 def test_cancelled_expense_is_not_included_in_profitability():
@@ -142,9 +144,9 @@ def test_cancelled_expense_is_not_included_in_profitability():
     )
 
     assert result.expenses == Decimal("30000.00")
-    assert result.profit == Decimal("70000.00")
-    assert result.margin == Decimal("70.0")
-    
+    assert result.profit == Decimal("86000.00")
+    assert result.margin == Decimal("74.14")
+
 def test_get_order_profitability_raises_error_when_order_does_not_exist():
     handler = GetOrderProfitabilityHandler(
         InMemoryOrderRepository(),

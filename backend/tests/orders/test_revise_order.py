@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import pytest
 
+from src.shared.domain.value_objects.tax_rate import TaxRate
 from src.orders.application.errors import OrderNotFoundError
 from src.orders.application.revise_order.command import ReviseOrderCommand
 from src.orders.application.revise_order.handler import ReviseOrderHandler
@@ -24,6 +25,7 @@ def test_revise_order():
     order = Order(
         customer_id=uuid4(),
         currency="MXN",
+        tax_rate=TaxRate(Decimal("16")),
     )
 
     item = OrderItem(
@@ -67,12 +69,12 @@ def test_revise_order():
     assert saved_order.revision_number == 1
     assert saved_order.items[0].description == "Troquel modificado"
     assert saved_order.items[0].quantity == 2
-    assert saved_order.total.amount == Decimal("3000.00")
+    assert saved_order.total.amount == Decimal("3480.00")
 
     assert len(revisions) == 1
     assert revisions[0].revision_number == 1
     assert revisions[0].reason == "Customer requested changes"
-    assert revisions[0].snapshot["total"] == "3000.00"
+    assert revisions[0].snapshot["total"] == "3480.00"
 
 
 
@@ -109,6 +111,7 @@ def test_order_revisions_increment():
     order = Order(
         customer_id=uuid4(),
         currency="MXN",
+        tax_rate=TaxRate(Decimal("16")),
     )
 
     item = OrderItem(

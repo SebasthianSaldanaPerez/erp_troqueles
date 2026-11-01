@@ -3,6 +3,7 @@ from uuid import uuid4
 
 import pytest
 
+from src.shared.domain.value_objects.tax_rate import TaxRate
 from src.orders.application.errors import OrderNotFoundError
 from src.orders.application.start_order.command import StartOrderCommand
 from src.orders.application.start_order.handler import StartOrderHandler
@@ -16,6 +17,7 @@ def create_order_with_item() -> Order:
     order = Order(
         customer_id=uuid4(),
         currency="MXN",
+        tax_rate=TaxRate(Decimal("16")),
     )
 
     order.add_item(
@@ -55,6 +57,7 @@ def test_start_empty_order_raises_error():
     order = Order(
         customer_id=uuid4(),
         currency="MXN",
+        tax_rate=TaxRate(Decimal("16")),
     )
     repository.save(order)
 

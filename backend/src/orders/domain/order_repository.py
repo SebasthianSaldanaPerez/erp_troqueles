@@ -13,3 +13,7 @@ class OrderRepository(ABC):
     @abstractmethod
     def get_by_id(self, order_id: UUID) -> Order | None:
         pass
+
+    @abstractmethod
+    def list_all(self) -> list[Order]:
+        pass

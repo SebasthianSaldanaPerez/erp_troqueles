@@ -1,8 +1,10 @@
+from decimal import Decimal
 from enum import Enum
 from uuid import UUID, uuid4
 
 from src.orders.domain.order_item import OrderItem
 from src.shared.domain.value_objects.money import Money
+from src.shared.domain.value_objects.tax_rate import TaxRate
 
 
 class OrderStatus(Enum):
@@ -21,6 +23,7 @@ class Order:
     def __init__(
         self,
         customer_id: UUID,
+        tax_rate: TaxRate,
         origin_quotation_id: UUID | None = None,
         currency: str = "MXN",
         order_id: UUID | None = None,
@@ -32,6 +35,7 @@ class Order:
         self._customer_id = customer_id
         self._origin_quotation_id = origin_quotation_id
         self._currency = currency.strip().upper()
+        self._tax_rate = tax_rate
         self._status = status
         self._billing_status = billing_status
         self._revision_number = revision_number
@@ -58,14 +62,29 @@ class Order:
         return tuple(self._items)
 
     @property
-    def total(self) -> Money:
+    def subtotal(self) -> Money:
         total = Money.zero(self._currency)
 
         for item in self._items:
             total = total.add(item.total)
 
         return total
-    
+
+    @property
+    def tax(self) -> Money:
+        tax_amount = self._tax_rate.apply_to(
+            self.subtotal.amount
+        )
+
+        return Money(
+            amount=tax_amount,
+            currency=self._currency,
+        )
+
+    @property
+    def total(self) -> Money:
+        return self.subtotal.add(self.tax)
+        
     @property
     def revision_number(self) -> int:
         return self._revision_number
@@ -73,6 +92,22 @@ class Order:
     @property
     def billing_status(self) -> BillingStatus:
         return self._billing_status
+
+    @property
+    def currency(self) -> str:
+        return self._currency
+
+    @property
+    def billing_status(self) -> BillingStatus:
+        return self._billing_status
+
+    @property
+    def revision_number(self) -> int:
+        return self._revision_number
+
+    @property
+    def tax_rate(self) -> TaxRate:
+        return self._tax_rate
 
     def add_item(self, item: OrderItem) -> None:
         self._ensure_editable()
@@ -175,12 +210,29 @@ class Order:
                     "id": str(item.id),
                     "description": item.description,
                     "quantity": item.quantity,
-                    "unit_price": str(item.unit_price.amount),
+                    "unit_price": str(
+                            item.unit_price.amount.quantize(
+                                Decimal("0.01")
+                            )
+                        ),
                     "currency": item.unit_price.currency,
                 }
                 for item in self._items
             ],
-            "total": str(self.total.amount),
+            "subtotal": str(
+                self.subtotal.amount.quantize(Decimal("0.01"))
+            ),
+            "tax": str(
+                self.tax.amount.quantize(Decimal("0.01"))
+            ),
+            "total": str(
+                self.total.amount.quantize(Decimal("0.01"))
+            ),
+            "total": str(
+                self.total.amount.quantize(
+                    Decimal("0.01")
+                )
+            ),
         }
     
     def update_billing_status(
@@ -209,3 +261,31 @@ class Order:
             raise ValueError("Only fully invoiced orders can be marked as paid")
 
         self._billing_status = BillingStatus.PAID
+
+    @classmethod
+    def rehydrate(
+        cls,
+        order_id: UUID,
+        customer_id: UUID,
+        tax_rate: TaxRate,
+        origin_quotation_id: UUID | None,
+        currency: str,
+        status: OrderStatus,
+        billing_status: BillingStatus,
+        revision_number: int,
+        items: list[OrderItem],
+    ) -> "Order":
+        order = cls(
+            order_id=order_id,
+            customer_id=customer_id,
+            tax_rate=tax_rate,
+            origin_quotation_id=origin_quotation_id,
+            currency=currency,
+            status=status,
+            billing_status=billing_status,
+            revision_number=revision_number,
+        )
+
+        order._items = list(items)
+
+        return order

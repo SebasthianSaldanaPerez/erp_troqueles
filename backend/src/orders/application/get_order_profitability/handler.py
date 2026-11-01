@@ -55,9 +55,11 @@ class GetOrderProfitabilityHandler:
         profit = revenue - total_expenses
 
         margin = (
-            (profit / revenue) * Decimal("100")
+            ((profit / revenue) * Decimal("100")).quantize(
+                Decimal("0.01")
+            )
             if revenue > 0
-            else Decimal("0")
+            else Decimal("0.00")
         )
 
         return OrderProfitability(

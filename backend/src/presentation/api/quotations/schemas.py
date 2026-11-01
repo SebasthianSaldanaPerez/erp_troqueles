@@ -49,3 +49,6 @@ class UpdateQuotationItemRequest(BaseModel):
 
 class QuotationItemCreatedResponse(BaseModel):
     id: str
+
+class ConvertQuotationToOrderResponse(BaseModel):
+    order_id: str

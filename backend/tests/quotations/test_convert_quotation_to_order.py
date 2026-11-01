@@ -74,7 +74,7 @@ def test_convert_quotation_to_order():
     assert len(order.items) == 1
     assert order.items[0].description == "Troquel A"
     assert order.items[0].quantity == 2
-    assert order.total.amount == Decimal("2000.00")
+    assert order.total.amount == Decimal("2320.00")
 
 
 def test_draft_quotation_cannot_be_converted_to_order():

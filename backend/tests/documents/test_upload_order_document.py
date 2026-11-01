@@ -1,7 +1,9 @@
+from decimal import Decimal
 from uuid import uuid4
 
 import pytest
 
+from src.shared.domain.value_objects.tax_rate import TaxRate
 from src.documents.application.upload_order_document.command import (
     UploadOrderDocumentCommand,
 )
@@ -26,6 +28,7 @@ def test_upload_order_document():
     order = Order(
         customer_id=uuid4(),
         currency="MXN",
+        tax_rate=TaxRate(Decimal("0")),
     )
     order_repository.save(order)
 

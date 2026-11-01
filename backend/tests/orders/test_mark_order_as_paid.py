@@ -3,6 +3,7 @@ from uuid import uuid4
 
 import pytest
 
+from src.shared.domain.value_objects.tax_rate import TaxRate
 from src.orders.application.errors import OrderNotFoundError
 from src.orders.application.mark_order_as_paid.command import (
     MarkOrderAsPaidCommand,
@@ -20,6 +21,7 @@ def create_order() -> Order:
     order = Order(
         customer_id=uuid4(),
         currency="MXN",
+        tax_rate=TaxRate(Decimal("16")),
     )
 
     order.add_item(
@@ -43,7 +45,7 @@ def test_mark_order_as_paid():
 
     order.update_billing_status(
         Money(
-            Decimal("10000.00"),
+            Decimal("11600.00"),
             "MXN",
         )
     )

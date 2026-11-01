@@ -41,7 +41,8 @@ class ConvertQuotationToOrderHandler:
         order = Order(
             customer_id=quotation.customer_id,
             origin_quotation_id=quotation.id,
-            currency=quotation.total.currency,
+            tax_rate=quotation.tax_rate,
+            currency=quotation.currency,
         )
 
         for quotation_item in quotation.items:

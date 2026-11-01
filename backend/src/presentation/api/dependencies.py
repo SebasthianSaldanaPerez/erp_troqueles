@@ -13,7 +13,12 @@ from src.suppliers.infrastructure.sqlalchemy_supplier_repository import (
 from src.quotations.infrastructure.sqlalchemy_quotation_repository import (
     SQLAlchemyQuotationRepository,
 )
-
+from src.orders.infrastructure.sqlalchemy_order_repository import (
+    SQLAlchemyOrderRepository,
+)
+from src.expenses.infrastructure.sqlalchemy_expense_repository import (
+    SQLAlchemyExpenseRepository,
+)
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
@@ -38,3 +43,13 @@ def get_quotation_repository(
     db: Session = Depends(get_db),
 ) -> SQLAlchemyQuotationRepository:
     return SQLAlchemyQuotationRepository(db)
+
+def get_order_repository(
+    db: Session = Depends(get_db),
+) -> SQLAlchemyOrderRepository:
+    return SQLAlchemyOrderRepository(db)
+
+def get_expense_repository(
+    db: Session = Depends(get_db),
+) -> SQLAlchemyExpenseRepository:
+    return SQLAlchemyExpenseRepository(db)

@@ -21,3 +21,6 @@ class InMemoryOrderRepository(OrderRepository):
                 return order
 
         return None
+
+    def list_all(self) -> list[Order]:
+        return list(self.orders)

@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import pytest
 
+from src.shared.domain.value_objects.tax_rate import TaxRate
 from src.invoices.application.register_invoice.command import (
     RegisterInvoiceCommand,
 )
@@ -26,6 +27,7 @@ from tests.fakes.in_memory_order_repository import (
 def create_order() -> Order:
     order = Order(
         customer_id=uuid4(),
+        tax_rate=TaxRate(Decimal("16")),
         currency="MXN",
     )
 
@@ -134,7 +136,7 @@ def test_invoice_cannot_exceed_order_total():
                 order_id=order.id,
                 folio="FAC-002",
                 invoice_date=date.today(),
-                total=Decimal("3000.00"),
+                total=Decimal("8000.00"),
             )
         )
 
@@ -199,7 +201,7 @@ def test_register_invoices_can_fully_invoice_order():
             order_id=order.id,
             folio="FAC-001",
             invoice_date=date.today(),
-            total=Decimal("4000.00"),
+            total=Decimal("8000.00"),
             currency="MXN",
         )
     )
@@ -209,7 +211,7 @@ def test_register_invoices_can_fully_invoice_order():
             order_id=order.id,
             folio="FAC-002",
             invoice_date=date.today(),
-            total=Decimal("6000.00"),
+            total=Decimal("3600.00"),
             currency="MXN",
         )
     )

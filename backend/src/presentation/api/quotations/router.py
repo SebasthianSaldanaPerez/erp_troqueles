@@ -6,6 +6,15 @@ from sqlalchemy.orm import Session
 from src.quotations.application.create_quotation.command import (
     CreateQuotationCommand,
 )
+from src.orders.infrastructure.sqlalchemy_order_repository import (
+    SQLAlchemyOrderRepository,
+)
+from src.quotations.application.convert_quotation_to_order.command import (
+    ConvertQuotationToOrderCommand,
+)
+from src.quotations.application.convert_quotation_to_order.handler import (
+    ConvertQuotationToOrderHandler,
+)
 from src.quotations.application.accept_quotation.command import (
     AcceptQuotationCommand,
 )
@@ -52,6 +61,7 @@ from src.quotations.infrastructure.sqlalchemy_quotation_repository import (
 from src.presentation.api.dependencies import (
     get_db,
     get_quotation_repository,
+    get_order_repository,
 )
 from src.presentation.api.quotations.mappers import (
     quotation_to_response,
@@ -63,6 +73,7 @@ from src.presentation.api.quotations.schemas import (
     QuotationItemCreatedResponse,
     QuotationResponse,
     UpdateQuotationItemRequest,
+    ConvertQuotationToOrderResponse,
 )
 
 from src.quotations.application.add_quotation_item.command import (
@@ -477,3 +488,56 @@ def cancel_quotation(
     except Exception:
         db.rollback()
         raise
+
+@router.post(
+    "/{quotation_id}/convert-to-order",
+    response_model=ConvertQuotationToOrderResponse,
+    status_code=201,
+)
+def convert_quotation_to_order(
+    quotation_id: UUID,
+    db: Session = Depends(get_db),
+    quotation_repository: SQLAlchemyQuotationRepository = Depends(
+        get_quotation_repository
+    ),
+    order_repository: SQLAlchemyOrderRepository = Depends(
+        get_order_repository
+    ),
+) -> ConvertQuotationToOrderResponse:
+    handler = ConvertQuotationToOrderHandler(
+        quotation_repository=quotation_repository,
+        order_repository=order_repository,
+    )
+
+    command = ConvertQuotationToOrderCommand(
+        quotation_id=quotation_id,
+    )
+
+    try:
+        order_id = handler.execute(command)
+
+        db.commit()
+
+    except QuotationNotFoundError as error:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=404,
+            detail="Quotation not found",
+        ) from error
+
+    except ValueError as error:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=422,
+            detail=str(error),
+        ) from error
+
+    except Exception:
+        db.rollback()
+        raise
+
+    return ConvertQuotationToOrderResponse(
+        order_id=str(order_id),
+    )
