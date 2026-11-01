@@ -62,3 +62,22 @@ class SQLAlchemyOrderRevisionRepository(OrderRevisionRepository):
             created_by=model.created_by,
             created_at=model.created_at,
         )
+
+    def get_by_order_id_and_revision_number(
+        self,
+        order_id: UUID,
+        revision_number: int,
+    ) -> OrderRevision | None:
+        statement = select(OrderRevisionModel).where(
+            OrderRevisionModel.order_id == order_id,
+            OrderRevisionModel.revision_number == revision_number,
+        )
+
+        model = self._session.scalars(
+            statement
+        ).first()
+
+        if model is None:
+            return None
+
+        return self._to_domain(model)

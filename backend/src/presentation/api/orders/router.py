@@ -15,6 +15,7 @@ from src.orders.application.mark_order_as_paid.command import (
 from src.orders.application.mark_order_as_paid.handler import (
     MarkOrderAsPaidHandler,
 )
+
 from src.expenses.infrastructure.sqlalchemy_expense_repository import (
     SQLAlchemyExpenseRepository,
 )
@@ -52,7 +53,16 @@ from src.orders.infrastructure.sqlalchemy_order_revision_repository import (
 from src.orders.application.deliver_order.handler import (
     DeliverOrderHandler,
 )
-from src.orders.application.errors import OrderNotFoundError
+from src.orders.application.errors import (
+    OrderNotFoundError,
+    OrderRevisionNotFoundError,
+)
+from src.orders.application.get_order_revision.handler import (
+    GetOrderRevisionHandler,
+)
+from src.orders.application.get_order_revision.query import (
+    GetOrderRevisionQuery,
+)
 from src.orders.application.get_order.handler import GetOrderHandler
 from src.orders.application.get_order.query import GetOrderQuery
 from src.orders.application.list_orders.handler import ListOrdersHandler
@@ -419,3 +429,40 @@ def list_order_revisions(
         )
         for revision in revisions
     ]
+
+@router.get(
+    "/{order_id}/revisions/{revision_number}",
+    response_model=OrderRevisionResponse,
+)
+def get_order_revision(
+    order_id: UUID,
+    revision_number: int,
+    repository: SQLAlchemyOrderRevisionRepository = Depends(
+        get_order_revision_repository
+    ),
+) -> OrderRevisionResponse:
+    handler = GetOrderRevisionHandler(repository)
+
+    try:
+        revision = handler.execute(
+            GetOrderRevisionQuery(
+                order_id=order_id,
+                revision_number=revision_number,
+            )
+        )
+
+    except OrderRevisionNotFoundError as error:
+        raise HTTPException(
+            status_code=404,
+            detail="Order revision not found",
+        ) from error
+
+    return OrderRevisionResponse(
+        id=str(revision.id),
+        order_id=str(revision.order_id),
+        revision_number=revision.revision_number,
+        snapshot=revision.snapshot,
+        reason=revision.reason,
+        created_by=str(revision.created_by),
+        created_at=revision.created_at,
+    )

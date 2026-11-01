@@ -18,3 +18,17 @@ class InMemoryOrderRevisionRepository(OrderRevisionRepository):
             for revision in self.revisions
             if revision.order_id == order_id
         ]
+
+    def get_by_order_id_and_revision_number(
+        self,
+        order_id,
+        revision_number,
+    ):
+        for revision in self.revisions:
+            if (
+                revision.order_id == order_id
+                and revision.revision_number == revision_number
+            ):
+                return revision
+
+        return None
