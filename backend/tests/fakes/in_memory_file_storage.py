@@ -19,3 +19,14 @@ class InMemoryFileStorage(FileStorage):
 
     def delete(self, object_key: str) -> None:
         self.files.pop(object_key, None)
+
+    def read(
+        self,
+        object_key: str,
+    ) -> bytes:
+        file = self.files.get(object_key)
+
+        if file is None:
+            raise FileNotFoundError(object_key)
+
+        return file["content"]

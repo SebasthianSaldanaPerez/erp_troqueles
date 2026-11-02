@@ -22,6 +22,7 @@ from tests.fakes.in_memory_document_repository import (
 def create_document() -> Document:
     return Document(
         filename="invoice.pdf",
+        order_id=uuid4(),
         object_key="orders/ORD-001/invoice.pdf",
         mime_type="application/pdf",
         size=1024,

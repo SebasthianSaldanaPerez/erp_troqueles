@@ -21,6 +21,7 @@ from src.infrastructure.database.models.order_revision_model import (
 from src.infrastructure.database.models.expense_model import ExpenseModel
 from src.infrastructure.database.models.invoice_model import InvoiceModel
 from src.infrastructure.database.models.document_model import DocumentModel
+from src.infrastructure.database.models.user_model import UserModel
 import os
 
 from dotenv import load_dotenv

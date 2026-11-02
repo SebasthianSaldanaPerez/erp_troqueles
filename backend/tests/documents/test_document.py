@@ -12,6 +12,7 @@ from src.documents.domain.document import (
 def test_document_is_created():
     document = Document(
         filename="invoice.pdf",
+        order_id=uuid4(),
         object_key="orders/ORD-001/invoice.pdf",
         mime_type="application/pdf",
         size=1024,
@@ -30,6 +31,7 @@ def test_document_requires_filename():
     with pytest.raises(ValueError):
         Document(
             filename="",
+            order_id=uuid4(),
             object_key="orders/file.pdf",
             mime_type="application/pdf",
             size=1024,
@@ -42,6 +44,7 @@ def test_document_requires_object_key():
     with pytest.raises(ValueError):
         Document(
             filename="file.pdf",
+            order_id=uuid4(),
             object_key="",
             mime_type="application/pdf",
             size=1024,
@@ -54,6 +57,7 @@ def test_document_size_cannot_be_negative():
     with pytest.raises(ValueError):
         Document(
             filename="file.pdf",
+            order_id=uuid4(),
             object_key="orders/file.pdf",
             mime_type="application/pdf",
             size=-1,
@@ -65,6 +69,7 @@ def test_document_size_cannot_be_negative():
 def test_document_can_be_archived():
     document = Document(
         filename="file.pdf",
+        order_id=uuid4(),
         object_key="orders/file.pdf",
         mime_type="application/pdf",
         size=1024,
@@ -80,6 +85,7 @@ def test_document_can_be_archived():
 def test_archived_document_cannot_be_archived_again():
     document = Document(
         filename="file.pdf",
+        order_id=uuid4(),
         object_key="orders/file.pdf",
         mime_type="application/pdf",
         size=1024,
