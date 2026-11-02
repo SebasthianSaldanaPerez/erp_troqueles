@@ -21,3 +21,10 @@ class InMemoryDocumentRepository(DocumentRepository):
                 return document
 
         return None
+
+    def list_by_order_id(self, order_id):
+        return [
+            document
+            for document in self.documents
+            if document.order_id == order_id
+        ]

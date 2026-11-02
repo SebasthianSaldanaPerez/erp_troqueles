@@ -44,6 +44,7 @@ class UploadOrderDocumentHandler:
 
         document = Document(
             document_id=document_id,
+            order_id=command.order_id,
             filename=command.filename,
             object_key=object_key,
             mime_type=command.mime_type,

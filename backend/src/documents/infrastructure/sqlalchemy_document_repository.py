@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.documents.domain.document import (
@@ -25,6 +26,7 @@ class SQLAlchemyDocumentRepository(DocumentRepository):
         if model is None:
             model = DocumentModel(
                 id=document.id,
+                order_id=document.order_id,
                 filename=document.filename,
                 object_key=document.object_key,
                 mime_type=document.mime_type,
@@ -57,8 +59,32 @@ class SQLAlchemyDocumentRepository(DocumentRepository):
         if model is None:
             return None
 
+        return self._to_domain(model)
+
+    def list_by_order_id(
+        self,
+        order_id: UUID,
+    ) -> list[Document]:
+        statement = select(DocumentModel).where(
+            DocumentModel.order_id == order_id
+        )
+
+        models = self._session.scalars(
+            statement
+        ).all()
+
+        return [
+            self._to_domain(model)
+            for model in models
+        ]
+
+    @staticmethod
+    def _to_domain(
+        model: DocumentModel,
+    ) -> Document:
         return Document(
             document_id=model.id,
+            order_id=model.order_id,
             filename=model.filename,
             object_key=model.object_key,
             mime_type=model.mime_type,

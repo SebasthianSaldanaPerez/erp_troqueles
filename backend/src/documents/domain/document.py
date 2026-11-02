@@ -20,13 +20,14 @@ class DocumentType(Enum):
 class Document:
     def __init__(
         self,
+        order_id: UUID,
         filename: str,
         object_key: str,
         mime_type: str,
         size: int,
         document_type: DocumentType,
         uploaded_by: UUID,
-        document_id: UUID | None = None,
+        document_id: UUID | None = None, 
         status: DocumentStatus = DocumentStatus.ACTIVE,
     ):
         self._id = document_id or uuid4()
@@ -37,6 +38,7 @@ class Document:
         self._document_type = document_type
         self._uploaded_by = uploaded_by
         self._status = status
+        self._order_id = order_id
 
     @property
     def id(self) -> UUID:
@@ -69,6 +71,10 @@ class Document:
     @property
     def status(self) -> DocumentStatus:
         return self._status
+
+    @property
+    def order_id(self) -> UUID:
+        return self._order_id
 
     def archive(self) -> None:
         if self._status == DocumentStatus.ARCHIVED:

@@ -7,6 +7,7 @@ def document_to_response(
 ) -> DocumentResponse:
     return DocumentResponse(
         id=str(document.id),
+        order_id=str(document.order_id),
         filename=document.filename,
         mime_type=document.mime_type,
         size=document.size,

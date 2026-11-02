@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.infrastructure.database.base import Base
+from sqlalchemy import ForeignKey
 
 
 class DocumentModel(Base):
@@ -48,4 +49,10 @@ class DocumentModel(Base):
     status: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
+    )
+
+    order_id: Mapped[UUID] = mapped_column(
+    PG_UUID(as_uuid=True),
+    ForeignKey("orders.id"),
+    nullable=False,
     )

@@ -14,8 +14,13 @@ from fastapi import (
 )
 
 from sqlalchemy.orm import Session
+from src.documents.application.list_documents_by_order.handler import (
+    ListDocumentsByOrderHandler,
+)
+from src.documents.application.list_documents_by_order.query import (
+    ListDocumentsByOrderQuery,
+)
 
-from src.documents.application import file_storage
 from src.documents.application.upload_order_document.command import (
     UploadOrderDocumentCommand,
 )
@@ -121,9 +126,9 @@ def get_document(
 
 
 @router.get(
-    "/documents/{document_id}/download",
+    "/documents/{document_id}/view",
 )
-def download_document(
+def view_document(
     document_id: UUID,
     document_repository=Depends(get_document_repository),
     file_storage=Depends(get_file_storage),
@@ -190,3 +195,24 @@ def archive_document(
     except Exception:
         db.rollback()
         raise
+
+@router.get(
+    "/orders/{order_id}/documents",
+    response_model=list[DocumentResponse],
+)
+def list_order_documents(
+    order_id: UUID,
+    repository=Depends(get_document_repository),
+) -> list[DocumentResponse]:
+    handler = ListDocumentsByOrderHandler(repository)
+
+    documents = handler.execute(
+        ListDocumentsByOrderQuery(
+            order_id=order_id,
+        )
+    )
+
+    return [
+        document_to_response(document)
+        for document in documents
+    ]
