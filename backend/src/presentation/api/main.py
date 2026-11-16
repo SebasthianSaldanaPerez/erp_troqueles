@@ -8,6 +8,7 @@ from src.presentation.api.expenses.router import router as expenses_router
 from src.presentation.api.invoices.router import router as invoices_router
 from src.presentation.api.documents.router import router as documents_router
 from src.presentation.api.auth.router import router as auth_router
+from src.presentation.api.users.router import router as users_router
 
 
 app = FastAPI(
@@ -23,6 +24,7 @@ app.include_router(expenses_router)
 app.include_router(invoices_router)
 app.include_router(documents_router)
 app.include_router(auth_router)
+app.include_router(users_router)
 
 @app.get("/health")
 def health_check():
