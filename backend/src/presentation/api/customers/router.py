@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from src.customers.application.change_customer_address.command import (
     ChangeCustomerAddressCommand,
 )
+
 from src.presentation.api.security import require_roles
 from src.users.domain.user import User, UserRole
 from src.customers.application.change_customer_address.handler import (
@@ -123,6 +124,12 @@ def create_customer(
     repository: SQLAlchemyCustomerRepository = Depends(
         get_customer_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> CreateCustomerResponse:
     handler = CreateCustomerHandler(repository)
 
@@ -238,6 +245,13 @@ def get_customer(
     repository: SQLAlchemyCustomerRepository = Depends(
         get_customer_repository
     ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+            UserRole.VIEWER,
+        )
+    ),
 ) -> CustomerResponse:
     handler = GetCustomerHandler(repository)
 
@@ -309,6 +323,12 @@ def deactivate_customer(
     repository: SQLAlchemyCustomerRepository = Depends(
         get_customer_repository
     ),
+        current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ) -> None:
     handler = DeactivateCustomerHandler(repository)
 
@@ -342,6 +362,12 @@ def reactivate_customer(
     db: Session = Depends(get_db),
     repository: SQLAlchemyCustomerRepository = Depends(
         get_customer_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = ReactivateCustomerHandler(repository)
@@ -377,6 +403,12 @@ def change_customer_email(
     db: Session = Depends(get_db),
     repository: SQLAlchemyCustomerRepository = Depends(
         get_customer_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = ChangeCustomerEmailHandler(repository)
@@ -422,6 +454,12 @@ def change_customer_rfc(
     repository: SQLAlchemyCustomerRepository = Depends(
         get_customer_repository
     ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ) -> None:
     handler = ChangeCustomerRFCHandler(repository)
 
@@ -466,6 +504,12 @@ def change_customer_phone(
     repository: SQLAlchemyCustomerRepository = Depends(
         get_customer_repository
     ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ) -> None:
     handler = ChangeCustomerPhoneHandler(repository)
 
@@ -509,6 +553,12 @@ def change_customer_address(
     db: Session = Depends(get_db),
     repository: SQLAlchemyCustomerRepository = Depends(
         get_customer_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = ChangeCustomerAddressHandler(repository)
@@ -561,6 +611,12 @@ def change_customer_contact_name(
     repository: SQLAlchemyCustomerRepository = Depends(
         get_customer_repository
     ),
+        current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ) -> None:
     handler = ChangeCustomerContactNameHandler(repository)
 
@@ -596,6 +652,12 @@ def change_customer_notes(
     db: Session = Depends(get_db),
     repository: SQLAlchemyCustomerRepository = Depends(
         get_customer_repository
+    ),
+        current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = ChangeCustomerNotesHandler(repository)

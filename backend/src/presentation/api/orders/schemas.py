@@ -42,8 +42,6 @@ class ReviseOrderRequest(BaseModel):
     unit_price: Decimal
     currency: str = "MXN"
     reason: str
-    user_id: UUID
-
 
 class OrderRevisionResponse(BaseModel):
     id: str

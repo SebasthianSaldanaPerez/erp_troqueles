@@ -15,6 +15,8 @@ from src.orders.application.mark_order_as_paid.command import (
 from src.orders.application.mark_order_as_paid.handler import (
     MarkOrderAsPaidHandler,
 )
+from src.presentation.api.security import require_roles
+from src.users.domain.user import User, UserRole
 
 from src.expenses.infrastructure.sqlalchemy_expense_repository import (
     SQLAlchemyExpenseRepository,
@@ -104,6 +106,13 @@ def list_orders(
     repository: SQLAlchemyOrderRepository = Depends(
         get_order_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+        UserRole.VIEWER,
+    )
+),
 ) -> list[OrderResponse]:
     handler = ListOrdersHandler(repository)
 
@@ -125,6 +134,13 @@ def get_order(
     repository: SQLAlchemyOrderRepository = Depends(
         get_order_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+        UserRole.VIEWER,
+    )
+),
 ) -> OrderResponse:
     handler = GetOrderHandler(repository)
 
@@ -153,6 +169,12 @@ def start_order(
     repository: SQLAlchemyOrderRepository = Depends(
         get_order_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> None:
     handler = StartOrderHandler(repository)
 
@@ -194,6 +216,12 @@ def deliver_order(
     db: Session = Depends(get_db),
     repository: SQLAlchemyOrderRepository = Depends(
         get_order_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = DeliverOrderHandler(repository)
@@ -237,6 +265,12 @@ def cancel_order(
     repository: SQLAlchemyOrderRepository = Depends(
         get_order_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> None:
     handler = CancelOrderHandler(repository)
 
@@ -281,6 +315,13 @@ def get_order_profitability(
     expense_repository: SQLAlchemyExpenseRepository = Depends(
         get_expense_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+        UserRole.VIEWER,
+    )
+),
 ) -> OrderProfitabilityResponse:
     handler = GetOrderProfitabilityHandler(
         order_repository=order_repository,
@@ -317,6 +358,12 @@ def mark_order_as_paid(
     db: Session = Depends(get_db),
     repository: SQLAlchemyOrderRepository = Depends(
         get_order_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = MarkOrderAsPaidHandler(repository)
@@ -364,6 +411,12 @@ def revise_order(
     revision_repository: SQLAlchemyOrderRevisionRepository = Depends(
         get_order_revision_repository
     ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ) -> None:
     unit_of_work = SQLAlchemyUnitOfWork(db)
 
@@ -374,15 +427,15 @@ def revise_order(
     )
 
     command = ReviseOrderCommand(
-        order_id=order_id,
-        item_id=request.item_id,
-        description=request.description,
-        quantity=request.quantity,
-        unit_price=request.unit_price,
-        currency=request.currency,
-        reason=request.reason,
-        user_id=request.user_id,
-    )
+    order_id=order_id,
+    item_id=request.item_id,
+    description=request.description,
+    quantity=request.quantity,
+    unit_price=request.unit_price,
+    currency=request.currency,
+    reason=request.reason,
+    user_id=current_user.id,
+    )   
 
     try:
         handler.execute(command)
@@ -408,6 +461,13 @@ def list_order_revisions(
     repository: SQLAlchemyOrderRevisionRepository = Depends(
         get_order_revision_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+        UserRole.VIEWER,
+    )
+),
 ) -> list[OrderRevisionResponse]:
     handler = ListOrderRevisionsHandler(repository)
 
@@ -440,6 +500,13 @@ def get_order_revision(
     repository: SQLAlchemyOrderRevisionRepository = Depends(
         get_order_revision_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+        UserRole.VIEWER,
+    )
+),
 ) -> OrderRevisionResponse:
     handler = GetOrderRevisionHandler(repository)
 

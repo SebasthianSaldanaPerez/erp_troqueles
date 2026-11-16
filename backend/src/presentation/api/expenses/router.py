@@ -16,6 +16,8 @@ from src.expenses.application.list_expenses_by_order.handler import (
 from src.expenses.application.list_expenses_by_order.query import (
     ListExpensesByOrderQuery,
 )
+from src.presentation.api.security import require_roles
+from src.users.domain.user import User, UserRole
 from src.expenses.application.register_expense.command import (
     RegisterExpenseCommand,
 )
@@ -60,6 +62,12 @@ def register_expense(
     order_repository: SQLAlchemyOrderRepository = Depends(
         get_order_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> RegisterExpenseResponse:
     handler = RegisterExpenseHandler(
         expense_repository=expense_repository,
@@ -118,6 +126,13 @@ def list_expenses_by_order(
     repository: SQLAlchemyExpenseRepository = Depends(
         get_expense_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+        UserRole.VIEWER,
+    )
+),
 ) -> list[ExpenseResponse]:
     handler = ListExpensesByOrderHandler(repository)
 
@@ -142,6 +157,12 @@ def cancel_expense(
     repository: SQLAlchemyExpenseRepository = Depends(
         get_expense_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> None:
     handler = CancelExpenseHandler(repository)
 

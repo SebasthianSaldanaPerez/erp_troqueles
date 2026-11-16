@@ -20,6 +20,8 @@ from src.presentation.api.suppliers.schemas import (
     RenameSupplierRequest,
     SupplierResponse,
 )
+from src.presentation.api.security import require_roles
+from src.users.domain.user import User, UserRole
 from src.shared.domain.errors import (
     InvalidAddressError,
     InvalidEmailError,
@@ -121,6 +123,12 @@ def create_supplier(
     repository: SQLAlchemySupplierRepository = Depends(
         get_supplier_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> CreateSupplierResponse:
     handler = CreateSupplierHandler(repository)
 
@@ -183,6 +191,13 @@ def list_suppliers(
     repository: SQLAlchemySupplierRepository = Depends(
         get_supplier_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+        UserRole.VIEWER,
+    )
+),
 ) -> list[SupplierResponse]:
     handler = ListSuppliersHandler(repository)
 
@@ -204,6 +219,13 @@ def get_supplier(
     supplier_id: UUID,
     repository: SQLAlchemySupplierRepository = Depends(
         get_supplier_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+            UserRole.VIEWER,
+        )
     ),
 ) -> SupplierResponse:
     handler = GetSupplierHandler(repository)
@@ -235,6 +257,12 @@ def rename_supplier(
     repository: SQLAlchemySupplierRepository = Depends(
         get_supplier_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> None:
     handler = RenameSupplierHandler(repository)
 
@@ -269,6 +297,12 @@ def deactivate_supplier(
     repository: SQLAlchemySupplierRepository = Depends(
         get_supplier_repository
     ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ) -> None:
     handler = DeactivateSupplierHandler(repository)
 
@@ -301,6 +335,12 @@ def reactivate_supplier(
     db: Session = Depends(get_db),
     repository: SQLAlchemySupplierRepository = Depends(
         get_supplier_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = ReactivateSupplierHandler(repository)
@@ -335,6 +375,12 @@ def change_supplier_email(
     db: Session = Depends(get_db),
     repository: SQLAlchemySupplierRepository = Depends(
         get_supplier_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = ChangeSupplierEmailHandler(repository)
@@ -378,6 +424,12 @@ def change_supplier_rfc(
     repository: SQLAlchemySupplierRepository = Depends(
         get_supplier_repository
     ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ) -> None:
     handler = ChangeSupplierRFCHandler(repository)
 
@@ -420,6 +472,12 @@ def change_supplier_phone(
     repository: SQLAlchemySupplierRepository = Depends(
         get_supplier_repository
     ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ) -> None:
     handler = ChangeSupplierPhoneHandler(repository)
 
@@ -461,6 +519,12 @@ def change_supplier_address(
     db: Session = Depends(get_db),
     repository: SQLAlchemySupplierRepository = Depends(
         get_supplier_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = ChangeSupplierAddressHandler(repository)
@@ -511,6 +575,12 @@ def change_supplier_contact_name(
     repository: SQLAlchemySupplierRepository = Depends(
         get_supplier_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> None:
     handler = ChangeSupplierContactNameHandler(repository)
 
@@ -545,6 +615,12 @@ def change_supplier_notes(
     db: Session = Depends(get_db),
     repository: SQLAlchemySupplierRepository = Depends(
         get_supplier_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = ChangeSupplierNotesHandler(repository)

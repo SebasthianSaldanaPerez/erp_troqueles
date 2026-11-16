@@ -21,6 +21,8 @@ from src.presentation.api.dependencies import (
     get_invoice_repository,
     get_order_repository,
 )
+from src.presentation.api.security import require_roles
+from src.users.domain.user import User, UserRole
 from src.presentation.api.invoices.schemas import (
     RegisterInvoiceRequest,
     RegisterInvoiceResponse,
@@ -65,6 +67,12 @@ def register_invoice(
     order_repository: SQLAlchemyOrderRepository = Depends(
         get_order_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> RegisterInvoiceResponse:
     handler = RegisterInvoiceHandler(
         invoice_repository=invoice_repository,
@@ -117,6 +125,13 @@ def list_invoices_by_order(
     repository: SQLAlchemyInvoiceRepository = Depends(
         get_invoice_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+        UserRole.VIEWER,
+    )
+),
 ) -> list[InvoiceResponse]:
     handler = ListInvoicesByOrderHandler(repository)
 
@@ -144,6 +159,12 @@ def cancel_invoice(
     order_repository: SQLAlchemyOrderRepository = Depends(
         get_order_repository
     ),
+        current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> None:
     unit_of_work = SQLAlchemyUnitOfWork(db)
 

@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from src.quotations.application.create_quotation.command import (
     CreateQuotationCommand,
 )
+from src.presentation.api.security import require_roles
+from src.users.domain.user import User, UserRole
 from src.orders.infrastructure.sqlalchemy_order_repository import (
     SQLAlchemyOrderRepository,
 )
@@ -111,6 +113,12 @@ def create_quotation(
     repository: SQLAlchemyQuotationRepository = Depends(
         get_quotation_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> CreateQuotationResponse:
     handler = CreateQuotationHandler(repository)
 
@@ -140,6 +148,13 @@ def list_quotations(
     repository: SQLAlchemyQuotationRepository = Depends(
         get_quotation_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+        UserRole.VIEWER,
+    )
+),
 ) -> list[QuotationResponse]:
     handler = ListQuotationsHandler(repository)
 
@@ -161,6 +176,13 @@ def get_quotation(
     repository: SQLAlchemyQuotationRepository = Depends(
         get_quotation_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+        UserRole.VIEWER,
+    )
+),
 ) -> QuotationResponse:
     handler = GetQuotationHandler(repository)
 
@@ -190,6 +212,12 @@ def add_quotation_item(
     db: Session = Depends(get_db),
     repository: SQLAlchemyQuotationRepository = Depends(
         get_quotation_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> QuotationItemCreatedResponse:
     handler = AddQuotationItemHandler(repository)
@@ -242,6 +270,12 @@ def update_quotation_item(
     repository: SQLAlchemyQuotationRepository = Depends(
         get_quotation_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> None:
     handler = UpdateQuotationItemHandler(repository)
 
@@ -289,6 +323,12 @@ def remove_quotation_item(
     repository: SQLAlchemyQuotationRepository = Depends(
         get_quotation_repository
     ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ) -> None:
     handler = RemoveQuotationItemHandler(repository)
 
@@ -330,6 +370,12 @@ def send_quotation(
     db: Session = Depends(get_db),
     repository: SQLAlchemyQuotationRepository = Depends(
         get_quotation_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = SendQuotationHandler(repository)
@@ -373,6 +419,12 @@ def accept_quotation(
     repository: SQLAlchemyQuotationRepository = Depends(
         get_quotation_repository
     ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ) -> None:
     handler = AcceptQuotationHandler(repository)
 
@@ -415,6 +467,12 @@ def reject_quotation(
     repository: SQLAlchemyQuotationRepository = Depends(
         get_quotation_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> None:
     handler = RejectQuotationHandler(repository)
 
@@ -456,6 +514,12 @@ def cancel_quotation(
     db: Session = Depends(get_db),
     repository: SQLAlchemyQuotationRepository = Depends(
         get_quotation_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = CancelQuotationHandler(repository)
@@ -503,6 +567,12 @@ def convert_quotation_to_order(
     order_repository: SQLAlchemyOrderRepository = Depends(
         get_order_repository
     ),
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ADMIN,
+        UserRole.OPERATOR,
+    )
+),
 ) -> ConvertQuotationToOrderResponse:
     handler = ConvertQuotationToOrderHandler(
         quotation_repository=quotation_repository,

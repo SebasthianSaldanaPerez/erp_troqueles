@@ -1,9 +1,5 @@
 from uuid import UUID
 
-from pathlib import Path
-
-from fastapi.responses import FileResponse
-
 from fastapi import (
     APIRouter,
     Depends,
@@ -12,23 +8,24 @@ from fastapi import (
     HTTPException,
     UploadFile,
 )
-
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+
+from src.documents.application.archive_document.command import (
+    ArchiveDocumentCommand,
+)
+from src.documents.application.archive_document.handler import (
+    ArchiveDocumentHandler,
+)
+from src.documents.application.errors import DocumentNotFoundError
 from src.documents.application.list_documents_by_order.handler import (
     ListDocumentsByOrderHandler,
 )
 from src.documents.application.list_documents_by_order.query import (
     ListDocumentsByOrderQuery,
 )
-
 from src.documents.application.upload_order_document.command import (
     UploadOrderDocumentCommand,
-)
-from src.documents.application.archive_document.command import (
-    ArchiveDocumentCommand,
-)
-from src.documents.application.archive_document.handler import (
-    ArchiveDocumentHandler,
 )
 from src.documents.application.upload_order_document.handler import (
     UploadOrderDocumentHandler,
@@ -41,9 +38,10 @@ from src.presentation.api.dependencies import (
     get_file_storage,
     get_order_repository,
 )
-from src.documents.application.errors import DocumentNotFoundError
 from src.presentation.api.documents.mappers import document_to_response
 from src.presentation.api.documents.schemas import DocumentResponse
+from src.presentation.api.security import require_roles
+from src.users.domain.user import User, UserRole
 
 
 router = APIRouter(
@@ -58,12 +56,17 @@ router = APIRouter(
 async def upload_order_document(
     order_id: UUID,
     document_type: DocumentType = Form(...),
-    uploaded_by: UUID = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     order_repository=Depends(get_order_repository),
     document_repository=Depends(get_document_repository),
     file_storage=Depends(get_file_storage),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ):
     handler = UploadOrderDocumentHandler(
         order_repository=order_repository,
@@ -79,9 +82,12 @@ async def upload_order_document(
                 order_id=order_id,
                 filename=file.filename or "file",
                 content=content,
-                mime_type=file.content_type or "application/octet-stream",
+                mime_type=(
+                    file.content_type
+                    or "application/octet-stream"
+                ),
                 document_type=document_type,
-                uploaded_by=uploaded_by,
+                uploaded_by=current_user.id,
             )
         )
 
@@ -103,6 +109,7 @@ async def upload_order_document(
         "id": str(document_id),
     }
 
+
 @router.get(
     "/documents/{document_id}",
     response_model=DocumentResponse,
@@ -110,6 +117,13 @@ async def upload_order_document(
 def get_document(
     document_id: UUID,
     document_repository=Depends(get_document_repository),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+            UserRole.VIEWER,
+        )
+    ),
 ) -> DocumentResponse:
     document = document_repository.get_by_id(
         document_id
@@ -124,7 +138,6 @@ def get_document(
     return document_to_response(document)
 
 
-
 @router.get(
     "/documents/{document_id}/view",
 )
@@ -132,8 +145,17 @@ def view_document(
     document_id: UUID,
     document_repository=Depends(get_document_repository),
     file_storage=Depends(get_file_storage),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+            UserRole.VIEWER,
+        )
+    ),
 ):
-    document = document_repository.get_by_id(document_id)
+    document = document_repository.get_by_id(
+        document_id
+    )
 
     if document is None:
         raise HTTPException(
@@ -141,7 +163,9 @@ def view_document(
             detail="Document not found",
         )
 
-    path = file_storage.get_path(document.object_key)
+    path = file_storage.get_path(
+        document.object_key
+    )
 
     if not path.exists():
         raise HTTPException(
@@ -156,6 +180,7 @@ def view_document(
         content_disposition_type="inline",
     )
 
+
 @router.patch(
     "/documents/{document_id}/archive",
     status_code=204,
@@ -164,8 +189,16 @@ def archive_document(
     document_id: UUID,
     db: Session = Depends(get_db),
     repository=Depends(get_document_repository),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ) -> None:
-    handler = ArchiveDocumentHandler(repository)
+    handler = ArchiveDocumentHandler(
+        repository
+    )
 
     try:
         handler.execute(
@@ -196,6 +229,7 @@ def archive_document(
         db.rollback()
         raise
 
+
 @router.get(
     "/orders/{order_id}/documents",
     response_model=list[DocumentResponse],
@@ -203,8 +237,17 @@ def archive_document(
 def list_order_documents(
     order_id: UUID,
     repository=Depends(get_document_repository),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+            UserRole.VIEWER,
+        )
+    ),
 ) -> list[DocumentResponse]:
-    handler = ListDocumentsByOrderHandler(repository)
+    handler = ListDocumentsByOrderHandler(
+        repository
+    )
 
     documents = handler.execute(
         ListDocumentsByOrderQuery(
