@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from src.customers.application.change_customer_address.command import (
     ChangeCustomerAddressCommand,
 )
+from src.presentation.api.security import require_roles
+from src.users.domain.user import User, UserRole
 from src.customers.application.change_customer_address.handler import (
     ChangeCustomerAddressHandler,
 )
@@ -207,6 +209,13 @@ def list_customers(
     repository: SQLAlchemyCustomerRepository = Depends(
         get_customer_repository
     ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+            UserRole.VIEWER,
+        )
+    ),
 ) -> list[CustomerResponse]:
     handler = ListCustomersHandler(repository)
 
@@ -258,6 +267,12 @@ def rename_customer(
     db: Session = Depends(get_db),
     repository: SQLAlchemyCustomerRepository = Depends(
         get_customer_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
     ),
 ) -> None:
     handler = RenameCustomerHandler(repository)

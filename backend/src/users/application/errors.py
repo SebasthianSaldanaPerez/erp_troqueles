@@ -4,3 +4,10 @@ class UserNotFoundError(Exception):
 
 class UserEmailAlreadyExistsError(Exception):
     pass
+
+class InvalidCredentialsError(Exception):
+    pass
+
+
+class InactiveUserError(Exception):
+    pass

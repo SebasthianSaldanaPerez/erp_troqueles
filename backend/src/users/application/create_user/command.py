@@ -7,5 +7,5 @@ from src.users.domain.user import UserRole
 class CreateUserCommand:
     name: str
     email: str
-    password_hash: str
+    password: str
     role: UserRole = UserRole.VIEWER

@@ -30,6 +30,10 @@ from src.documents.infrastructure.sqlalchemy_document_repository import (
     SQLAlchemyDocumentRepository,
 )
 
+from src.users.infrastructure.sqlalchemy_user_repository import (
+    SQLAlchemyUserRepository,
+)
+
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
 
@@ -82,3 +86,8 @@ def get_document_repository(
 
 def get_file_storage() -> LocalFileStorage:
     return LocalFileStorage()
+
+def get_user_repository(
+    db: Session = Depends(get_db),
+) -> SQLAlchemyUserRepository:
+    return SQLAlchemyUserRepository(db)
