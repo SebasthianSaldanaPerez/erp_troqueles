@@ -2,11 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from src.presentation.api.dependencies import (
-    get_db,
     get_user_repository,
 )
 from src.presentation.api.auth.schemas import (
-    LoginRequest,
     TokenResponse,
 )
 from src.users.application.errors import (
@@ -29,6 +27,10 @@ from src.users.infrastructure.sqlalchemy_user_repository import (
     SQLAlchemyUserRepository,
 )
 from fastapi.security import OAuth2PasswordRequestForm
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/auth",
@@ -60,13 +62,28 @@ def login(
             )
         )
 
+        logger.info(
+            "Successful login for user email=%s",
+            form_data.username,
+        )
+
     except InvalidCredentialsError as error:
+        logger.warning(
+            "Failed login attempt for email=%s",
+            form_data.username,
+        )
+
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password",
         ) from error
 
     except InactiveUserError as error:
+        logger.warning(
+            "Login attempt for inactive user email=%s",
+            form_data.username,
+        )
+
         raise HTTPException(
             status_code=403,
             detail="User is inactive",
