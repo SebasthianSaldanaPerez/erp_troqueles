@@ -20,3 +20,6 @@ class UserResponse(BaseModel):
     email: str
     role: str
     status: str
+
+class ChangeUserRoleRequest(BaseModel):
+    role: UserRole
