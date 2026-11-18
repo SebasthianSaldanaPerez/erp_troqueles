@@ -13,7 +13,20 @@ services:
       - "5432:5432"
 
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      volumes:
+          - troqueles_postgres_data:/var/lib/postgresql/data
+          - ./postgres/init:/docker-entrypoint-initdb.d
+
+    healthcheck:
+          test:
+            [
+              "CMD-SHELL",
+              "pg_isready -U postgres -d troqueles"
+            ]
+          interval: 5s
+          timeout: 5s
+          retries: 10
+
 
 volumes:
-  postgres_data:
+  troqueles_postgres_data:
