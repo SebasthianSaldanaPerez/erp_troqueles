@@ -9,7 +9,7 @@ venv/
 
 # Pytest
 .pytest_cache/
-.storage/
+storage/
 
 # Environment variables
 .env
