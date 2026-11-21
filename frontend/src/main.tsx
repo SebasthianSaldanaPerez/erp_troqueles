@@ -1,8 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { CssBaseline, ThemeProvider } from "@mui/material";
+import { AuthProvider } from "./auth/AuthContext";
 
-import App from "./App";
+import {
+  CssBaseline,
+  ThemeProvider,
+} from "@mui/material";
+
+import { RouterProvider } from "react-router/dom";
+
+import { router } from "./router/router";
 import { theme } from "./theme/theme";
 
 ReactDOM.createRoot(
@@ -11,7 +18,10 @@ ReactDOM.createRoot(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <App />
+
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
     </ThemeProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );

@@ -5,6 +5,7 @@ from src.presentation.api.dependencies import (
     get_user_repository,
 )
 from src.presentation.api.auth.schemas import (
+    CurrentUserResponse,
     TokenResponse,
 )
 from src.users.application.errors import (
@@ -28,6 +29,8 @@ from src.users.infrastructure.sqlalchemy_user_repository import (
 )
 from fastapi.security import OAuth2PasswordRequestForm
 import logging
+from src.presentation.api.security import get_current_user
+from src.users.domain.user import User
 
 
 logger = logging.getLogger(__name__)
@@ -92,4 +95,21 @@ def login(
     return TokenResponse(
         access_token=token,
         token_type="bearer",
+    )
+
+@router.get(
+    "/me",
+    response_model=CurrentUserResponse,
+)
+def get_me(
+    current_user: User = Depends(
+        get_current_user
+    ),
+) -> CurrentUserResponse:
+    return CurrentUserResponse(
+        id=str(current_user.id),
+        name=current_user.name,
+        email=current_user.email.value,
+        role=current_user.role.value,
+        status=current_user.status.value,
     )
