@@ -5,6 +5,10 @@ import AppLayout from "../layout/AppLayout";
 import HomePage from "../pages/home/HomePage";
 import LoginPage from "../pages/login/LoginPage";
 import ProtectedRoute from "../auth/ProtectedRoute";
+import AdminRoute from "../auth/AdminRoute";
+import CustomersPage from "../pages/customers/CustomersPage";
+import CustomerDetailPage
+  from "../pages/customers/CustomerDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -26,7 +30,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "customers",
-        element: <PlaceholderPage title="Clientes" />,
+        element: <CustomersPage />,
+      },
+      {
+        path: "customers/:customerId",
+        element: <CustomerDetailPage />,
       },
       {
         path: "suppliers",
@@ -54,7 +62,9 @@ export const router = createBrowserRouter([
       },
       {
         path: "users",
-        element: <PlaceholderPage title="Usuarios" />,
+        element: (<AdminRoute>
+          <PlaceholderPage title="Usuarios" />
+        </AdminRoute>),
       },
     ],
   },

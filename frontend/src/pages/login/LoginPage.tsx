@@ -13,6 +13,15 @@ import { useNavigate } from "react-router";
 
 import { login } from "../../auth/authApi";
 import { useAuth } from "../../auth/AuthContext";
+import {
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
+
+import {
+  IconButton,
+  InputAdornment,
+} from "@mui/material";
 
 
 export default function LoginPage() {
@@ -22,6 +31,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] =
     useState("");
+    const [showPassword, setShowPassword] =
+  useState(false);
   const [error, setError] =
     useState<string | null>(null);
   const [loading, setLoading] =
@@ -120,7 +131,7 @@ export default function LoginPage() {
 
           <TextField
             label="Contraseña"
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(event) =>
               setPassword(event.target.value)
@@ -128,6 +139,31 @@ export default function LoginPage() {
             fullWidth
             required
             sx={{ mb: 3 }}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() =>
+                        setShowPassword(
+                          (current) => !current,
+                        )
+                      }
+                      edge="end"
+                      aria-label={
+                        showPassword
+                          ? "Ocultar contraseña"
+                          : "Mostrar contraseña"
+                      }
+                    >
+                      {showPassword
+                        ? <VisibilityOff />
+                        : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
 
           <Button

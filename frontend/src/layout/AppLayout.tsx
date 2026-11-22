@@ -83,6 +83,7 @@ const navigation = [
     label: "Usuarios",
     path: "/users",
     icon: <ManageAccountsOutlined />,
+    adminOnly: true,
   },
 ];
 
@@ -113,6 +114,12 @@ export default function AppLayout() {
     user,
     logout,
   } = useAuth();
+
+  const visibleNavigation = navigation.filter(
+    (item) =>
+      !item.adminOnly ||
+      user?.role === "ADMIN",
+  );
 
 
   function handleLogout() {
@@ -235,7 +242,7 @@ export default function AppLayout() {
           }}
         >
           <List disablePadding>
-            {navigation.map(
+            {visibleNavigation.map(
               (item) => (
                 <ListItemButton
                   key={
