@@ -9,6 +9,11 @@ import AdminRoute from "../auth/AdminRoute";
 import CustomersPage from "../pages/customers/CustomersPage";
 import CustomerDetailPage
   from "../pages/customers/CustomerDetailPage";
+import SuppliersPage
+  from "../pages/suppliers/SuppliersPage";
+import SupplierDetailPage
+  from "../pages/suppliers/SupplierDetailPage";
+  
 
 export const router = createBrowserRouter([
   {
@@ -38,7 +43,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "suppliers",
-        element: <PlaceholderPage title="Proveedores" />,
+        element: <SuppliersPage />,
+      },
+      {
+        path: "suppliers/:supplierId",
+        element: <SupplierDetailPage />,
       },
       {
         path: "quotations",
