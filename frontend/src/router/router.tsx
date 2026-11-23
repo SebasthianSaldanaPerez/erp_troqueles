@@ -13,6 +13,10 @@ import SuppliersPage
   from "../pages/suppliers/SuppliersPage";
 import SupplierDetailPage
   from "../pages/suppliers/SupplierDetailPage";
+import QuotationsPage
+  from "../pages/quotations/QuotationsPage";
+import QuotationDetailPage
+  from "../pages/quotations/QuotationDetailPage";
   
 
 export const router = createBrowserRouter([
@@ -51,7 +55,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "quotations",
-        element: <PlaceholderPage title="Cotizaciones" />,
+        element: <QuotationsPage />,
+      },
+      { 
+        path: "quotations/:quotationId",
+        element: <QuotationDetailPage />,
       },
       {
         path: "orders",
