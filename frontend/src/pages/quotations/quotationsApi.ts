@@ -153,3 +153,114 @@ export async function sendQuotation(
     );
   }
 }
+
+export async function removeQuotationItem(
+  quotationId: string,
+  itemId: string,
+): Promise<void> {
+  const response = await apiRequest(
+    `/quotations/${quotationId}/items/${itemId}`,
+    {
+      method: "DELETE",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "No se pudo eliminar el concepto",
+    );
+  }
+}
+
+export async function acceptQuotation(
+  quotationId: string,
+): Promise<void> {
+  const response = await apiRequest(
+    `/quotations/${quotationId}/accept`,
+    {
+      method: "PATCH",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "No se pudo aceptar la cotización",
+    );
+  }
+}
+
+
+export async function rejectQuotation(
+  quotationId: string,
+): Promise<void> {
+  const response = await apiRequest(
+    `/quotations/${quotationId}/reject`,
+    {
+      method: "PATCH",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "No se pudo rechazar la cotización",
+    );
+  }
+}
+
+
+export async function cancelQuotation(
+  quotationId: string,
+): Promise<void> {
+  const response = await apiRequest(
+    `/quotations/${quotationId}/cancel`,
+    {
+      method: "PATCH",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "No se pudo cancelar la cotización",
+    );
+  }
+}
+
+export async function reopenQuotation(
+  quotationId: string,
+): Promise<void> {
+  const response = await apiRequest(
+    `/quotations/${quotationId}/reopen`,
+    {
+      method: "PATCH",
+    },
+  );
+
+  if (!response.ok) {
+    const detail =
+      await response.text();
+
+    throw new Error(
+      `No se pudo reabrir la cotización: ${detail}`,
+    );
+  }
+}
+export async function convertQuotationToOrder(
+  quotationId: string,
+): Promise<string> {
+  const response = await apiRequest(
+    `/quotations/${quotationId}/convert-to-order`,
+    {
+      method: "POST",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "No se pudo convertir la cotización en orden",
+    );
+  }
+
+  const data = await response.json();
+
+  return data.order_id;
+}

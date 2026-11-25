@@ -10,6 +10,7 @@ import {
   Chip,
   CircularProgress,
   Divider,
+  IconButton,
   Paper,
   Snackbar,
   Table,
@@ -20,7 +21,17 @@ import {
   Typography,
 } from "@mui/material";
 
-import ArrowBackOutlined from "@mui/icons-material/ArrowBackOutlined";
+import AddOutlined
+  from "@mui/icons-material/AddOutlined";
+
+import ArrowBackOutlined
+  from "@mui/icons-material/ArrowBackOutlined";
+
+import DeleteOutlineOutlined
+  from "@mui/icons-material/DeleteOutlineOutlined";
+
+import EditOutlined
+  from "@mui/icons-material/EditOutlined";
 
 import {
   useNavigate,
@@ -28,146 +39,301 @@ import {
 } from "react-router";
 
 import {
-  getQuotation,
-  sendQuotation,
-} from "./quotationsApi";
+  useAuth,
+} from "../../auth/AuthContext";
 
 import {
   getCustomer,
 } from "../customers/customersApi";
 
-import EditOutlined
-  from "@mui/icons-material/EditOutlined";
-
-import IconButton
-  from "@mui/material/IconButton";
+import AddQuotationItemDialog
+  from "./AddQuotationItemDialog";
 
 import EditQuotationItemDialog
   from "./EditQuotationItemDialog";
+
+import {
+  acceptQuotation,
+  cancelQuotation,
+  convertQuotationToOrder,
+  getQuotation,
+  rejectQuotation,
+  removeQuotationItem,
+  reopenQuotation,
+  sendQuotation,
+} from "./quotationsApi";
 
 import type {
   Quotation,
   QuotationItem,
 } from "./types";
 
-import { useAuth }
-  from "../../auth/AuthContext";
-
-
 
 export default function QuotationDetailPage() {
   const navigate = useNavigate();
-  
-  const [updatingStatus, setUpdatingStatus] =
-  useState(false);
 
-  const [successMessage, setSuccessMessage] =
-  useState<string | null>(null);
+  const { quotationId } =
+    useParams();
 
-  const { user } = useAuth();
+  const { user } =
+    useAuth();
 
-  const canEdit =
-  user?.role === "ADMIN" ||
-  user?.role === "OPERATOR";
-
-  const [
-  selectedItem,
-  setSelectedItem,
-] = useState<QuotationItem | null>(
-  null,
-);
-
-  const { quotationId } = useParams();
 
   const [quotation, setQuotation] =
     useState<Quotation | null>(null);
 
+  const [customerName, setCustomerName] =
+    useState("");
+
   const [loading, setLoading] =
     useState(true);
 
-  const [customerName, setCustomerName] =
-    useState("");
+  const [updatingStatus, setUpdatingStatus] =
+    useState(false);
 
   const [error, setError] =
     useState<string | null>(null);
 
+  const [successMessage, setSuccessMessage] =
+    useState<string | null>(null);
+
+  const [
+    selectedItem,
+    setSelectedItem,
+  ] = useState<QuotationItem | null>(
+    null,
+  );
+
+  const [
+    addItemDialogOpen,
+    setAddItemDialogOpen,
+  ] = useState(false);
+
+
+  const canEdit =
+    user?.role === "ADMIN" ||
+    user?.role === "OPERATOR";
+
 
   async function loadQuotation() {
-  if (!quotationId) {
-    setError(
-      "No se proporcionó una cotización válida.",
-    );
-
-    setLoading(false);
-    return;
-  }
-
-  try {
-    setError(null);
-
-    const data =
-      await getQuotation(
-        quotationId,
+    if (!quotationId) {
+      setError(
+        "No se proporcionó una cotización válida.",
       );
 
-    setQuotation(data);
+      setLoading(false);
+      return;
+    }
 
-    const customer =
-      await getCustomer(
-        data.customer_id,
+    try {
+      setError(null);
+
+      const data =
+        await getQuotation(
+          quotationId,
+        );
+
+      setQuotation(data);
+
+      const customer =
+        await getCustomer(
+          data.customer_id,
+        );
+
+      setCustomerName(
+        customer.business_name,
       );
 
-    setCustomerName(
-      customer.business_name,
-    );
-
-  } catch {
-    setError(
-      "No se pudo cargar la cotización.",
-    );
-  } finally {
-    setLoading(false);
+    } catch {
+      setError(
+        "No se pudo cargar la cotización.",
+      );
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
 
   useEffect(() => {
     loadQuotation();
   }, [quotationId]);
 
-  async function handleSendQuotation() {
-  if (!quotation) {
-    return;
+
+  async function handleQuotationAction(
+    action: () => Promise<void>,
+    successMessageText: string,
+  ) {
+    setUpdatingStatus(true);
+    setError(null);
+
+    try {
+      await action();
+
+      await loadQuotation();
+
+      setSuccessMessage(
+        successMessageText,
+      );
+
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(
+          error.message,
+        );
+      } else {
+        setError(
+          "No se pudo actualizar la cotización.",
+        );
+      }
+    } finally {
+      setUpdatingStatus(false);
+    }
   }
 
-  setUpdatingStatus(true);
-  setError(null);
 
-  try {
-    await sendQuotation(
-      quotation.id,
-    );
+  async function handleSendQuotation() {
+    if (!quotation) {
+      return;
+    }
 
-    await loadQuotation();
-
-    setSuccessMessage(
+    await handleQuotationAction(
+      () =>
+        sendQuotation(
+          quotation.id,
+        ),
       "Cotización enviada correctamente.",
     );
-
-  } catch (error) {
-    if (error instanceof Error) {
-      setError(
-        error.message,
-      );
-    } else {
-      setError(
-        "No se pudo enviar la cotización.",
-      );
-    }
-  } finally {
-    setUpdatingStatus(false);
   }
-}
+
+
+  async function handleAcceptQuotation() {
+    if (!quotation) {
+      return;
+    }
+
+    await handleQuotationAction(
+      () =>
+        acceptQuotation(
+          quotation.id,
+        ),
+      "Cotización aceptada correctamente.",
+    );
+  }
+
+
+  async function handleRejectQuotation() {
+    if (!quotation) {
+      return;
+    }
+
+    await handleQuotationAction(
+      () =>
+        rejectQuotation(
+          quotation.id,
+        ),
+      "Cotización rechazada correctamente.",
+    );
+  }
+
+
+  async function handleCancelQuotation() {
+    if (!quotation) {
+      return;
+    }
+
+    await handleQuotationAction(
+      () =>
+        cancelQuotation(
+          quotation.id,
+        ),
+      "Cotización cancelada correctamente.",
+    );
+  }
+
+
+  async function handleReopenQuotation() {
+    if (!quotation) {
+      return;
+    }
+
+    await handleQuotationAction(
+      () =>
+        reopenQuotation(
+          quotation.id,
+        ),
+      "Cotización abierta nuevamente para revisión.",
+    );
+  }
+
+
+  async function handleRemoveItem(
+    itemId: string,
+  ) {
+    if (!quotation) {
+      return;
+    }
+
+    try {
+      setError(null);
+
+      await removeQuotationItem(
+        quotation.id,
+        itemId,
+      );
+
+      await loadQuotation();
+
+      setSuccessMessage(
+        "Concepto eliminado correctamente.",
+      );
+
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(
+          error.message,
+        );
+      } else {
+        setError(
+          "No se pudo eliminar el concepto.",
+        );
+      }
+    }
+  }
+
+
+  async function handleConvertToOrder() {
+    if (!quotation) {
+      return;
+    }
+
+    setUpdatingStatus(true);
+    setError(null);
+
+    try {
+      const orderId =
+        await convertQuotationToOrder(
+          quotation.id,
+        );
+
+      navigate(
+        `/orders/${orderId}`,
+      );
+
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(
+          error.message,
+        );
+      } else {
+        setError(
+          "No se pudo convertir la cotización en orden.",
+        );
+      }
+    } finally {
+      setUpdatingStatus(false);
+    }
+  }
+
 
   if (loading) {
     return (
@@ -204,62 +370,162 @@ export default function QuotationDetailPage() {
         onClick={() =>
           navigate("/quotations")
         }
-        sx={{ mb: 2 }}
+        sx={{
+          mb: 2,
+        }}
       >
         Volver a cotizaciones
       </Button>
 
-      
 
-
-        <Box
+      {/* Encabezado */}
+      <Box
         sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 2,
-            mb: 3,
+          display: "flex",
+          justifyContent:
+            "space-between",
+          alignItems:
+            "flex-start",
+          gap: 2,
+          mb: 3,
         }}
-        >
+      >
         <Box>
-            <Typography variant="h1">
+          <Typography variant="h1">
             Cotización
-            </Typography>
+          </Typography>
 
-            <Typography
+          <Typography
             color="text.secondary"
-            sx={{ mt: 0.5 }}
-            >
+            sx={{
+              mt: 0.5,
+            }}
+          >
             {quotation.id}
-            </Typography>
+          </Typography>
         </Box>
 
+
+        {/* Estado y acciones */}
         <Box
-            sx={{
+          sx={{
             display: "flex",
             alignItems: "center",
-            gap: 1.5,
-            }}
+            gap: 1,
+            flexWrap: "wrap",
+            justifyContent:
+              "flex-end",
+          }}
         >
-            <QuotationStatusChip
-            status={quotation.status}
-            />
+          <QuotationStatusChip
+            status={
+              quotation.status
+            }
+          />
 
-            {canEdit &&
+
+          {/* DRAFT */}
+          {canEdit &&
             quotation.status === "DRAFT" && (
-                <Button
+              <Button
                 variant="contained"
-                disabled={updatingStatus}
-                onClick={handleSendQuotation}
-                >
+                disabled={
+                  updatingStatus
+                }
+                onClick={
+                  handleSendQuotation
+                }
+              >
                 {updatingStatus
-                    ? "Enviando..."
-                    : "Enviar cotización"}
+                  ? "Procesando..."
+                  : "Enviar cotización"}
+              </Button>
+            )}
+
+
+          {/* SENT */}
+          {canEdit &&
+            quotation.status === "SENT" && (
+              <>
+                <Button
+                  variant="contained"
+                  color="success"
+                  disabled={
+                    updatingStatus
+                  }
+                  onClick={
+                    handleAcceptQuotation
+                  }
+                >
+                  Aceptar
                 </Button>
+
+                <Button
+                  variant="outlined"
+                  color="error"
+                  disabled={
+                    updatingStatus
+                  }
+                  onClick={
+                    handleRejectQuotation
+                  }
+                >
+                  Rechazar
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  disabled={
+                    updatingStatus
+                  }
+                  onClick={
+                    handleCancelQuotation
+                  }
+                >
+                  Cancelar
+                </Button>
+              </>
+            )}
+
+
+          {/* REJECTED */}
+          {canEdit &&
+            quotation.status === "REJECTED" && (
+              <Button
+                variant="contained"
+                disabled={
+                  updatingStatus
+                }
+                onClick={
+                  handleReopenQuotation
+                }
+              >
+                Revisar cotización
+              </Button>
+            )}
+
+
+          {/* ACCEPTED */}
+          {canEdit &&
+            quotation.status === "ACCEPTED" && (
+              <Button
+                variant="contained"
+                disabled={
+                  updatingStatus
+                }
+                onClick={
+                  handleConvertToOrder
+                }
+              >
+                Convertir a orden
+              </Button>
             )}
         </Box>
-        </Box>
+      </Box>
 
+
+      {/* Información general */}
       <Paper
         variant="outlined"
         sx={{
@@ -271,7 +537,11 @@ export default function QuotationDetailPage() {
           Información general
         </Typography>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider
+          sx={{
+            my: 2,
+          }}
+        />
 
         <Box
           sx={{
@@ -305,6 +575,7 @@ export default function QuotationDetailPage() {
       </Paper>
 
 
+      {/* Conceptos */}
       <Paper
         variant="outlined"
         sx={{
@@ -316,11 +587,31 @@ export default function QuotationDetailPage() {
           sx={{
             px: 3,
             py: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent:
+              "space-between",
           }}
         >
           <Typography variant="h2">
             Conceptos
           </Typography>
+
+          {canEdit &&
+            quotation.status === "DRAFT" && (
+              <Button
+                startIcon={
+                  <AddOutlined />
+                }
+                onClick={() =>
+                  setAddItemDialogOpen(
+                    true,
+                  )
+                }
+              >
+                Agregar concepto
+              </Button>
+            )}
         </Box>
 
         <Divider />
@@ -349,14 +640,29 @@ export default function QuotationDetailPage() {
               >
                 Total
               </TableCell>
+
+              <TableCell
+                align="center"
+                sx={{
+                  width: 90,
+                  minWidth: 90,
+                  maxWidth: 90,
+                  px: 1,
+                }}
+              >
+                Acciones
+              </TableCell>
             </TableRow>
           </TableHead>
+
 
           <TableBody>
             {quotation.items.map(
               (item) => (
                 <TableRow
-                  key={item.id}
+                  key={
+                    item.id
+                  }
                 >
                   <TableCell>
                     {
@@ -376,32 +682,88 @@ export default function QuotationDetailPage() {
                     align="right"
                   >
                     {quotation.currency}{" "}
-                    {
-                      item.unit_price
-                    }
+                    {Number(
+                      item.unit_price,
+                    ).toLocaleString(
+                      "es-MX",
+                      {
+                        minimumFractionDigits:
+                          2,
+                        maximumFractionDigits:
+                          2,
+                      },
+                    )}
                   </TableCell>
 
                   <TableCell
                     align="right"
                   >
                     {quotation.currency}{" "}
-                    {
-                      item.total
-                    }
+                    {Number(
+                      item.total,
+                    ).toLocaleString(
+                      "es-MX",
+                      {
+                        minimumFractionDigits:
+                          2,
+                        maximumFractionDigits:
+                          2,
+                      },
+                    )}
                   </TableCell>
-                  <TableCell>
+
+                  <TableCell
+                    align="center"
+                    sx={{
+                      width: 90,
+                      minWidth: 90,
+                      maxWidth: 90,
+                      px: 0.5,
+                      whiteSpace:
+                        "nowrap",
+                    }}
+                  >
                     {canEdit &&
-                        quotation.status === "DRAFT" && (
-                        <IconButton
+                      quotation.status ===
+                        "DRAFT" && (
+                        <Box
+                          sx={{
+                            display:
+                              "flex",
+                            justifyContent:
+                              "center",
+                            gap: 0.25,
+                          }}
+                        >
+                          <IconButton
                             size="small"
                             onClick={() =>
-                            setSelectedItem(item)
+                              setSelectedItem(
+                                item,
+                              )
                             }
-                        >
-                            <EditOutlined />
-                        </IconButton>
-                        )}
-                    </TableCell>
+                          >
+                            <EditOutlined
+                              fontSize="small"
+                            />
+                          </IconButton>
+
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() =>
+                              handleRemoveItem(
+                                item.id,
+                              )
+                            }
+                          >
+                            <DeleteOutlineOutlined
+                              fontSize="small"
+                            />
+                          </IconButton>
+                        </Box>
+                      )}
+                  </TableCell>
                 </TableRow>
               ),
             )}
@@ -410,6 +772,7 @@ export default function QuotationDetailPage() {
       </Paper>
 
 
+      {/* Totales */}
       <Paper
         variant="outlined"
         sx={{
@@ -477,23 +840,77 @@ export default function QuotationDetailPage() {
           </Box>
         </Box>
       </Paper>
+
+
+      {/* Editar concepto */}
       <EditQuotationItemDialog
-        open={Boolean(selectedItem)}
-        quotationId={quotation.id}
-        item={selectedItem}
-        onClose={() =>
-            setSelectedItem(null)
+        open={
+          Boolean(
+            selectedItem,
+          )
         }
-        onUpdated={loadQuotation}
-        />
-        <Snackbar
-            open={Boolean(successMessage)}
-            autoHideDuration={3000}
-            onClose={() =>
-                setSuccessMessage(null)
-            }
-            message={successMessage}
-            />
+        quotationId={
+          quotation.id
+        }
+        item={
+          selectedItem
+        }
+        onClose={() =>
+          setSelectedItem(
+            null,
+          )
+        }
+        onUpdated={
+          loadQuotation
+        }
+      />
+
+
+      {/* Agregar concepto */}
+      <AddQuotationItemDialog
+        open={
+          addItemDialogOpen
+        }
+        quotationId={
+          quotation.id
+        }
+        currency={
+          quotation.currency
+        }
+        onClose={() =>
+          setAddItemDialogOpen(
+            false,
+          )
+        }
+        onCreated={async () => {
+          await loadQuotation();
+
+          setSuccessMessage(
+            "Concepto agregado correctamente.",
+          );
+        }}
+      />
+
+
+      {/* Feedback */}
+      <Snackbar
+        open={
+          Boolean(
+            successMessage,
+          )
+        }
+        autoHideDuration={
+          3000
+        }
+        onClose={() =>
+          setSuccessMessage(
+            null,
+          )
+        }
+        message={
+          successMessage
+        }
+      />
     </Box>
   );
 }
@@ -568,21 +985,25 @@ function SummaryRow({
 
       <Typography
         sx={{
-            fontWeight:
+          fontWeight:
             strong
-                ? 700
-                : 500,
+              ? 700
+              : 500,
         }}
-        >
+      >
         {currency}{" "}
-        {Number(value).toLocaleString(
-            "es-MX",
-            {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-            },
+        {Number(
+          value,
+        ).toLocaleString(
+          "es-MX",
+          {
+            minimumFractionDigits:
+              2,
+            maximumFractionDigits:
+              2,
+          },
         )}
-        </Typography>
+      </Typography>
     </Box>
   );
 }
@@ -593,7 +1014,10 @@ function QuotationStatusChip({
 }: {
   status: string;
 }) {
-  const labels: Record<string, string> = {
+  const labels: Record<
+    string,
+    string
+  > = {
     DRAFT: "Borrador",
     SENT: "Enviada",
     ACCEPTED: "Aceptada",
@@ -601,20 +1025,25 @@ function QuotationStatusChip({
     CANCELLED: "Cancelada",
   };
 
+
   return (
     <Chip
       label={
-        labels[status] ?? status
+        labels[status] ??
+        status
       }
       color={
         status === "ACCEPTED"
           ? "success"
-          : status ===
-                "REJECTED" ||
-              status ===
-                "CANCELLED"
+
+          : status === "REJECTED" ||
+              status === "CANCELLED"
             ? "error"
-            : "default"
+
+            : status === "SENT"
+              ? "primary"
+
+              : "default"
       }
       variant="outlined"
     />

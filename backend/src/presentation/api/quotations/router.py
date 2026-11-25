@@ -17,6 +17,12 @@ from src.quotations.application.convert_quotation_to_order.command import (
 from src.quotations.application.convert_quotation_to_order.handler import (
     ConvertQuotationToOrderHandler,
 )
+from src.quotations.application.reopen_quotation.command import (
+    ReopenQuotationCommand,
+)
+from src.quotations.application.reopen_quotation.handler import (
+    ReopenQuotationHandler,
+)
 from src.quotations.application.accept_quotation.command import (
     AcceptQuotationCommand,
 )
@@ -611,3 +617,45 @@ def convert_quotation_to_order(
     return ConvertQuotationToOrderResponse(
         order_id=str(order_id),
     )
+
+@router.patch(
+    "/{quotation_id}/reopen",
+    status_code=204,
+)
+def reopen_quotation(
+    quotation_id: UUID,
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
+    db: Session = Depends(get_db),
+    repository=Depends(
+        get_quotation_repository
+    ),
+) -> None:
+    handler = ReopenQuotationHandler(
+        repository
+    )
+
+    try:
+        handler.execute(
+            ReopenQuotationCommand(
+                quotation_id=quotation_id,
+            )
+        )
+
+        db.commit()
+
+    except ValueError as error:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=422,
+            detail=str(error),
+        ) from error
+
+    except Exception:
+        db.rollback()
+        raise

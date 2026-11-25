@@ -115,6 +115,14 @@ class Quotation:
 
         self._status = QuotationStatus.REJECTED
 
+    def reopen(self) -> None:
+        if self.status != QuotationStatus.REJECTED:
+            raise ValueError(
+                "Only rejected quotations can be reopened"
+            )
+
+        self._status = QuotationStatus.DRAFT
+    
     def cancel(self) -> None:
         if self._status not in (
             QuotationStatus.DRAFT,
