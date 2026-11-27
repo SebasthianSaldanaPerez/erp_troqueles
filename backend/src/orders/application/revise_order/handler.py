@@ -24,7 +24,9 @@ class ReviseOrderHandler:
 
     def execute(self, command: ReviseOrderCommand) -> None:
         with self._unit_of_work:
-            order = self._order_repository.get_by_id(command.order_id)
+            order = self._order_repository.get_by_id(
+                command.order_id
+            )
 
             if order is None:
                 raise OrderNotFoundError(
@@ -35,6 +37,25 @@ class ReviseOrderHandler:
                 amount=command.unit_price,
                 currency=command.currency,
             )
+
+            if order.revision_number == 0:
+                initial_revision = (
+                    self._revision_repository.get_by_order_id_and_revision_number(
+                        order.id,
+                        0,
+                    )
+                )
+
+                if initial_revision is None:
+                    initial_revision = OrderRevision.create_initial(
+                        order_id=order.id,
+                        snapshot=order.snapshot(),
+                        created_by=command.user_id,
+                    )
+
+                    self._revision_repository.save(
+                        initial_revision
+                    )
 
             order.update_item(
                 item_id=command.item_id,

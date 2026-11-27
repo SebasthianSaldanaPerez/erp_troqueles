@@ -17,6 +17,8 @@ import QuotationsPage
   from "../pages/quotations/QuotationsPage";
 import QuotationDetailPage
   from "../pages/quotations/QuotationDetailPage";
+import OrderDetailPage
+  from "../pages/orders/OrderDetailPage";
   
 
 export const router = createBrowserRouter([
@@ -64,6 +66,10 @@ export const router = createBrowserRouter([
       {
         path: "orders",
         element: <PlaceholderPage title="Órdenes" />,
+      },
+      {
+        path: "orders/:orderId",
+        element: <OrderDetailPage />,
       },
       {
         path: "expenses",

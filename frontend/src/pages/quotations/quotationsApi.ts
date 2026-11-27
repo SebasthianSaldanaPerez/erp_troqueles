@@ -244,6 +244,7 @@ export async function reopenQuotation(
     );
   }
 }
+
 export async function convertQuotationToOrder(
   quotationId: string,
 ): Promise<string> {
@@ -255,12 +256,40 @@ export async function convertQuotationToOrder(
   );
 
   if (!response.ok) {
+    const detail = await response.text();
+
     throw new Error(
-      "No se pudo convertir la cotización en orden",
+      `No se pudo convertir la cotización: ${detail}`,
     );
   }
 
-  const data = await response.json();
+  const data: { order_id: string } =
+    await response.json();
+
+  return data.order_id;
+}
+
+export async function getQuotationOrderId(
+  quotationId: string,
+): Promise<string | null> {
+  const response = await apiRequest(
+    `/quotations/${quotationId}/order`,
+    {
+      method: "GET",
+    },
+  );
+
+  if (!response.ok) {
+    const detail = await response.text();
+
+    throw new Error(
+      `No se pudo consultar la orden: ${detail}`,
+    );
+  }
+
+  const data: {
+    order_id: string | null;
+  } = await response.json();
 
   return data.order_id;
 }

@@ -89,6 +89,21 @@ class SQLAlchemyOrderRepository(OrderRepository):
 
         return self._to_domain(model)
 
+    def get_by_origin_quotation_id(
+        self,
+        quotation_id: UUID,
+    ) -> Order | None:
+        stmt = select(OrderModel).where(
+            OrderModel.origin_quotation_id == quotation_id
+        )
+
+        model = self._session.scalar(stmt)
+
+        if model is None:
+            return None
+
+        return self._to_domain(model)
+
     def list_all(self) -> list[Order]:
         statement = (
             select(OrderModel)

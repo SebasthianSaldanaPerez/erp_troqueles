@@ -2,7 +2,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+from pydantic import BaseModel
 
+from src.orders.infrastructure.sqlalchemy_order_revision_repository import SQLAlchemyOrderRevisionRepository
 from src.quotations.application.create_quotation.command import (
     CreateQuotationCommand,
 )
@@ -50,7 +53,7 @@ from src.quotations.application.send_quotation.handler import (
 from src.quotations.application.create_quotation.handler import (
     CreateQuotationHandler,
 )
-from src.quotations.application.errors import QuotationNotFoundError
+from src.quotations.application.errors import (QuotationNotFoundError, QuotationAlreadyConvertedError,)
 from src.quotations.application.get_quotation.handler import (
     GetQuotationHandler,
 )
@@ -68,6 +71,7 @@ from src.quotations.infrastructure.sqlalchemy_quotation_repository import (
 )
 from src.presentation.api.dependencies import (
     get_db,
+    get_order_revision_repository,
     get_quotation_repository,
     get_order_repository,
 )
@@ -102,6 +106,9 @@ from src.quotations.application.update_quotation_item.command import (
 from src.quotations.application.update_quotation_item.handler import (
     UpdateQuotationItemHandler,
 )
+
+class QuotationOrderResponse(BaseModel):
+    order_id: str | None
 
 router = APIRouter(
     prefix="/quotations",
@@ -573,20 +580,26 @@ def convert_quotation_to_order(
     order_repository: SQLAlchemyOrderRepository = Depends(
         get_order_repository
     ),
+    revision_repository: SQLAlchemyOrderRevisionRepository = Depends(
+    get_order_revision_repository
+    ),
     current_user: User = Depends(
-    require_roles(
-        UserRole.ADMIN,
-        UserRole.OPERATOR,
-    )
-),
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+        )
+    ),
 ) -> ConvertQuotationToOrderResponse:
+
     handler = ConvertQuotationToOrderHandler(
         quotation_repository=quotation_repository,
         order_repository=order_repository,
+        revision_repository=revision_repository,
     )
 
     command = ConvertQuotationToOrderCommand(
         quotation_id=quotation_id,
+        user_id=current_user.id,
     )
 
     try:
@@ -602,6 +615,14 @@ def convert_quotation_to_order(
             detail="Quotation not found",
         ) from error
 
+    except QuotationAlreadyConvertedError as error:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=409,
+            detail="Esta cotización ya tiene una orden generada.",
+        ) from error
+
     except ValueError as error:
         db.rollback()
 
@@ -609,6 +630,33 @@ def convert_quotation_to_order(
             status_code=422,
             detail=str(error),
         ) from error
+
+    except IntegrityError as error:
+        db.rollback()
+
+        sqlstate = (
+            getattr(error.orig, "sqlstate", None)
+            or getattr(error.orig, "pgcode", None)
+        )
+
+        constraint_name = getattr(
+            getattr(error.orig, "diag", None),
+            "constraint_name",
+            None,
+        )
+
+        if (
+            sqlstate == "23505"
+            and constraint_name == "orders_origin_quotation_id_key"
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "Esta cotización ya tiene una orden generada."
+                ),
+            ) from error
+
+        raise
 
     except Exception:
         db.rollback()
@@ -659,3 +707,42 @@ def reopen_quotation(
     except Exception:
         db.rollback()
         raise
+
+@router.get(
+    "/{quotation_id}/order",
+    response_model=QuotationOrderResponse,
+)
+def get_quotation_order(
+    quotation_id: UUID,
+    quotation_repository: SQLAlchemyQuotationRepository = Depends(
+        get_quotation_repository
+    ),
+    order_repository: SQLAlchemyOrderRepository = Depends(
+        get_order_repository
+    ),
+    current_user: User = Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.OPERATOR,
+            UserRole.VIEWER,
+        )
+    ),
+) -> QuotationOrderResponse:
+
+    quotation = quotation_repository.get_by_id(
+        quotation_id
+    )
+
+    if quotation is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Quotation not found",
+        )
+
+    order = order_repository.get_by_origin_quotation_id(
+        quotation_id
+    )
+
+    return QuotationOrderResponse(
+        order_id=str(order.id) if order else None
+    )

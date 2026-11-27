@@ -17,3 +17,10 @@ class OrderRepository(ABC):
     @abstractmethod
     def list_all(self) -> list[Order]:
         pass
+
+    @abstractmethod
+    def get_by_origin_quotation_id(
+        self,
+        quotation_id: UUID,
+    ) -> Order | None:
+        pass

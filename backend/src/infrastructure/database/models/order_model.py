@@ -27,6 +27,7 @@ class OrderModel(Base):
         PG_UUID(as_uuid=True),
         ForeignKey("quotations.id"),
         nullable=True,
+        unique=True,
     )
 
     status: Mapped[str] = mapped_column(

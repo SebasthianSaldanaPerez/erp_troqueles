@@ -61,12 +61,14 @@ import {
   removeQuotationItem,
   reopenQuotation,
   sendQuotation,
+  getQuotationOrderId,
 } from "./quotationsApi";
 
 import type {
   Quotation,
   QuotationItem,
 } from "./types";
+
 
 
 export default function QuotationDetailPage() {
@@ -103,6 +105,12 @@ export default function QuotationDetailPage() {
   ] = useState<QuotationItem | null>(
     null,
   );
+
+  const [linkedOrder, setLinkedOrder] = useState<{
+    quotationId: string;
+    orderId: string | null;
+    error?: string;
+  } | null>(null);
 
   const [
     addItemDialogOpen,
@@ -158,6 +166,40 @@ export default function QuotationDetailPage() {
     loadQuotation();
   }, [quotationId]);
 
+  useEffect(() => {
+    if (!quotation || quotation.status !== "ACCEPTED") {
+      setLinkedOrder(null);
+      return;
+    }
+
+    let active = true;
+    const currentQuotationId = quotation.id;
+
+    setLinkedOrder(null);
+
+    getQuotationOrderId(currentQuotationId)
+      .then((orderId) => {
+        if (!active) return;
+
+        setLinkedOrder({
+          quotationId: currentQuotationId,
+          orderId,
+        });
+      })
+      .catch(() => {
+        if (!active) return;
+
+        setLinkedOrder({
+          quotationId: currentQuotationId,
+          orderId: null,
+          error: "No se pudo comprobar si esta cotización ya tiene una orden.",
+        });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [quotation?.id, quotation?.status]);
 
   async function handleQuotationAction(
     action: () => Promise<void>,
@@ -302,33 +344,26 @@ export default function QuotationDetailPage() {
 
 
   async function handleConvertToOrder() {
-    if (!quotation) {
+    if (!quotation || updatingStatus) {
       return;
     }
+
+    const quotationId = quotation.id;
 
     setUpdatingStatus(true);
     setError(null);
 
     try {
       const orderId =
-        await convertQuotationToOrder(
-          quotation.id,
-        );
+        await convertQuotationToOrder(quotationId);
 
-      navigate(
-        `/orders/${orderId}`,
-      );
-
+      navigate(`/orders/${orderId}`);
     } catch (error) {
-      if (error instanceof Error) {
-        setError(
-          error.message,
-        );
-      } else {
-        setError(
-          "No se pudo convertir la cotización en orden.",
-        );
-      }
+      setError(
+        error instanceof Error
+          ? error.message
+          : "No se pudo convertir la cotización en orden.",
+      );
     } finally {
       setUpdatingStatus(false);
     }
@@ -378,7 +413,6 @@ export default function QuotationDetailPage() {
       </Button>
 
 
-      {/* Encabezado */}
       <Box
         sx={{
           display: "flex",
@@ -406,7 +440,6 @@ export default function QuotationDetailPage() {
         </Box>
 
 
-        {/* Estado y acciones */}
         <Box
           sx={{
             display: "flex",
@@ -423,8 +456,6 @@ export default function QuotationDetailPage() {
             }
           />
 
-
-          {/* DRAFT */}
           {canEdit &&
             quotation.status === "DRAFT" && (
               <Button
@@ -443,7 +474,6 @@ export default function QuotationDetailPage() {
             )}
 
 
-          {/* SENT */}
           {canEdit &&
             quotation.status === "SENT" && (
               <>
@@ -489,7 +519,6 @@ export default function QuotationDetailPage() {
             )}
 
 
-          {/* REJECTED */}
           {canEdit &&
             quotation.status === "REJECTED" && (
               <Button
@@ -505,27 +534,41 @@ export default function QuotationDetailPage() {
               </Button>
             )}
 
-
-          {/* ACCEPTED */}
-          {canEdit &&
-            quotation.status === "ACCEPTED" && (
+          {quotation.status === "ACCEPTED" && (
+            !linkedOrder ||
+            linkedOrder.quotationId !== quotation.id ? (
+              <Button disabled variant="outlined">
+                Consultando orden...
+              </Button>
+            ) : linkedOrder.error ? (
+              <Alert severity="warning">
+                {linkedOrder.error}
+              </Alert>
+            ) : linkedOrder.orderId ? (
               <Button
                 variant="contained"
-                disabled={
-                  updatingStatus
-                }
-                onClick={
-                  handleConvertToOrder
+                onClick={() =>
+                  navigate(`/orders/${linkedOrder.orderId}`)
                 }
               >
-                Convertir a orden
+                Ver orden generada
               </Button>
-            )}
+            ) : canEdit ? (
+              <Button
+                variant="contained"
+                disabled={updatingStatus}
+                onClick={handleConvertToOrder}
+              >
+                {updatingStatus
+                  ? "Convirtiendo..."
+                  : "Convertir a orden"}
+              </Button>
+            ) : null
+          )}
         </Box>
       </Box>
 
 
-      {/* Información general */}
       <Paper
         variant="outlined"
         sx={{
@@ -575,7 +618,6 @@ export default function QuotationDetailPage() {
       </Paper>
 
 
-      {/* Conceptos */}
       <Paper
         variant="outlined"
         sx={{
@@ -771,8 +813,6 @@ export default function QuotationDetailPage() {
         </Table>
       </Paper>
 
-
-      {/* Totales */}
       <Paper
         variant="outlined"
         sx={{
@@ -842,7 +882,6 @@ export default function QuotationDetailPage() {
       </Paper>
 
 
-      {/* Editar concepto */}
       <EditQuotationItemDialog
         open={
           Boolean(
@@ -866,7 +905,6 @@ export default function QuotationDetailPage() {
       />
 
 
-      {/* Agregar concepto */}
       <AddQuotationItemDialog
         open={
           addItemDialogOpen
@@ -892,7 +930,6 @@ export default function QuotationDetailPage() {
       />
 
 
-      {/* Feedback */}
       <Snackbar
         open={
           Boolean(

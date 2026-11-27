@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from src.orders.domain.order import Order
 from src.orders.domain.order_repository import OrderRepository
 
@@ -21,6 +23,19 @@ class InMemoryOrderRepository(OrderRepository):
                 return order
 
         return None
+
+    def get_by_origin_quotation_id(
+        self,
+        quotation_id: UUID,
+    ) -> Order | None:
+        return next(
+            (
+                order
+                for order in self._orders.values()
+                if order.origin_quotation_id == quotation_id
+            ),
+            None,
+        )
 
     def list_all(self) -> list[Order]:
         return list(self.orders)
